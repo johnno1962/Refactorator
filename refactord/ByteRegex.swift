@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 20/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/ByteRegex.swift#5 $
+//  $Id: //depot/Refactorator/refactord/ByteRegex.swift#1 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //

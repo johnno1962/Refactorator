@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
-		BB16FCC51C26964C005918BE /* ByteRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB16FCC31C2692C4005918BE /* ByteRegex.swift */; };
+		BB1D769E1C28612500F75914 /* ByteRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1D769C1C28610300F75914 /* ByteRegex.swift */; };
 		BB50F7581C2559F800E6C923 /* RefactoratorPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7561C2559F800E6C923 /* RefactoratorPlugin.m */; };
 		BB50F7591C2559F800E6C923 /* RefactoratorPlugin.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB50F7571C2559F800E6C923 /* RefactoratorPlugin.xib */; };
 		BB50F75B1C255ABE00E6C923 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB50F75A1C255ABE00E6C923 /* WebKit.framework */; };
@@ -50,7 +50,7 @@
 		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		8D5B49B6048680CD000E48DA /* Refactorator.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Refactorator.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BB16FCC31C2692C4005918BE /* ByteRegex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteRegex.swift; sourceTree = "<group>"; };
+		BB1D769C1C28610300F75914 /* ByteRegex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ByteRegex.swift; path = refactord/ByteRegex.swift; sourceTree = "<group>"; };
 		BB50F7551C2559F800E6C923 /* RefactoratorPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RefactoratorPlugin.h; sourceTree = "<group>"; };
 		BB50F7561C2559F800E6C923 /* RefactoratorPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RefactoratorPlugin.m; sourceTree = "<group>"; };
 		BB50F7571C2559F800E6C923 /* RefactoratorPlugin.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RefactoratorPlugin.xib; sourceTree = "<group>"; };
@@ -148,7 +148,7 @@
 				BB50F7A71C25C99A00E6C923 /* Refactorator.swift */,
 				BB50F7A51C25C99A00E6C923 /* LogParser.swift */,
 				BB50F7A41C25C99A00E6C923 /* LineGenerator.swift */,
-				BB16FCC31C2692C4005918BE /* ByteRegex.swift */,
+				BB1D769C1C28610300F75914 /* ByteRegex.swift */,
 				BB50F7A91C25C99A00E6C923 /* sourcekitd.h */,
 				BB50F7C91C25CB0200E6C923 /* sourcekitd.framework */,
 			);
@@ -260,7 +260,7 @@
 				BB50F7C61C25CAAC00E6C923 /* Refactorator.swift in Sources */,
 				BB50F7C71C25CAAC00E6C923 /* LogParser.swift in Sources */,
 				BB50F7C81C25CAAC00E6C923 /* LineGenerator.swift in Sources */,
-				BB16FCC51C26964C005918BE /* ByteRegex.swift in Sources */,
+				BB1D769E1C28612500F75914 /* ByteRegex.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
