@@ -1,0 +1,403 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
+		BB16FCC51C26964C005918BE /* ByteRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB16FCC31C2692C4005918BE /* ByteRegex.swift */; };
+		BB50F7581C2559F800E6C923 /* RefactoratorPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7561C2559F800E6C923 /* RefactoratorPlugin.m */; };
+		BB50F7591C2559F800E6C923 /* RefactoratorPlugin.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB50F7571C2559F800E6C923 /* RefactoratorPlugin.xib */; };
+		BB50F75B1C255ABE00E6C923 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB50F75A1C255ABE00E6C923 /* WebKit.framework */; };
+		BB50F7C41C25CA7E00E6C923 /* refactord in Resources */ = {isa = PBXBuildFile; fileRef = BB50F7BC1C25CA3400E6C923 /* refactord */; };
+		BB50F7C51C25CAAC00E6C923 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7A61C25C99A00E6C923 /* main.m */; };
+		BB50F7C61C25CAAC00E6C923 /* Refactorator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7A71C25C99A00E6C923 /* Refactorator.swift */; };
+		BB50F7C71C25CAAC00E6C923 /* LogParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7A51C25C99A00E6C923 /* LogParser.swift */; };
+		BB50F7C81C25CAAC00E6C923 /* LineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7A41C25C99A00E6C923 /* LineGenerator.swift */; };
+		BB50F7CA1C25CB0200E6C923 /* sourcekitd.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB50F7C91C25CB0200E6C923 /* sourcekitd.framework */; };
+		BB82F0CD1913D15F0015AE7A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = BB82F0CC1913D15F0015AE7A /* README.md */; };
+		BBBD4F591A4AF4FA009969E1 /* log.html in Resources */ = {isa = PBXBuildFile; fileRef = BBBD4F571A4AF4FA009969E1 /* log.html */; };
+		DA1B5D020E64686800921439 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 089C1672FE841209C02AAC07 /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BB50F7C21C25CA7800E6C923 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB50F7BB1C25CA3400E6C923;
+			remoteInfo = refactord;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		BB50F7BA1C25CA3400E6C923 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		8D5B49B6048680CD000E48DA /* Refactorator.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Refactorator.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BB16FCC31C2692C4005918BE /* ByteRegex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteRegex.swift; sourceTree = "<group>"; };
+		BB50F7551C2559F800E6C923 /* RefactoratorPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RefactoratorPlugin.h; sourceTree = "<group>"; };
+		BB50F7561C2559F800E6C923 /* RefactoratorPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RefactoratorPlugin.m; sourceTree = "<group>"; };
+		BB50F7571C2559F800E6C923 /* RefactoratorPlugin.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RefactoratorPlugin.xib; sourceTree = "<group>"; };
+		BB50F75A1C255ABE00E6C923 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		BB50F7A41C25C99A00E6C923 /* LineGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LineGenerator.swift; path = refactord/LineGenerator.swift; sourceTree = "<group>"; };
+		BB50F7A51C25C99A00E6C923 /* LogParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LogParser.swift; path = refactord/LogParser.swift; sourceTree = "<group>"; };
+		BB50F7A61C25C99A00E6C923 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = refactord/main.m; sourceTree = "<group>"; };
+		BB50F7A71C25C99A00E6C923 /* Refactorator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Refactorator.swift; path = refactord/Refactorator.swift; sourceTree = "<group>"; };
+		BB50F7A81C25C99A00E6C923 /* refactord-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "refactord-Bridging-Header.h"; path = "refactord/refactord-Bridging-Header.h"; sourceTree = "<group>"; };
+		BB50F7A91C25C99A00E6C923 /* sourcekitd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sourcekitd.h; path = refactord/sourcekitd.h; sourceTree = "<group>"; };
+		BB50F7BC1C25CA3400E6C923 /* refactord */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = refactord; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB50F7C91C25CB0200E6C923 /* sourcekitd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = sourcekitd.framework; path = Toolchains/XcodeDefault.xctoolchain/usr/lib/sourcekitd.framework; sourceTree = DEVELOPER_DIR; };
+		BB82F0CC1913D15F0015AE7A /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		BBBD4F571A4AF4FA009969E1 /* log.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = log.html; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D5B49B3048680CD000E48DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DA1B5D020E64686800921439 /* Foundation.framework in Frameworks */,
+				7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */,
+				BB50F75B1C255ABE00E6C923 /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB50F7B91C25CA3400E6C923 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB50F7CA1C25CB0200E6C923 /* sourcekitd.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* QuietXcode */ = {
+			isa = PBXGroup;
+			children = (
+				BB82F0CC1913D15F0015AE7A /* README.md */,
+				7F411B0C15FABAC6002F77B6 /* Classes */,
+				089C167CFE841241C02AAC07 /* Resources */,
+				BB50F7A21C25C97800E6C923 /* refactord */,
+				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
+				19C28FB8FE9D52D311CA2CBB /* Products */,
+			);
+			name = QuietXcode;
+			sourceTree = "<group>";
+		};
+		089C1671FE841209C02AAC07 /* Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				089C1672FE841209C02AAC07 /* Foundation.framework */,
+				7F2EB899145057EA00E97A87 /* AppKit.framework */,
+				BB50F75A1C255ABE00E6C923 /* WebKit.framework */,
+			);
+			name = "Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C167CFE841241C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8D5B49B7048680CD000E48DA /* Info.plist */,
+				BBBD4F571A4AF4FA009969E1 /* log.html */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		19C28FB8FE9D52D311CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D5B49B6048680CD000E48DA /* Refactorator.xcplugin */,
+				BB50F7BC1C25CA3400E6C923 /* refactord */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7F411B0C15FABAC6002F77B6 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				BB50F7551C2559F800E6C923 /* RefactoratorPlugin.h */,
+				BB50F7561C2559F800E6C923 /* RefactoratorPlugin.m */,
+				BB50F7571C2559F800E6C923 /* RefactoratorPlugin.xib */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		BB50F7A21C25C97800E6C923 /* refactord */ = {
+			isa = PBXGroup;
+			children = (
+				BB50F7A61C25C99A00E6C923 /* main.m */,
+				BB50F7A81C25C99A00E6C923 /* refactord-Bridging-Header.h */,
+				BB50F7A71C25C99A00E6C923 /* Refactorator.swift */,
+				BB50F7A51C25C99A00E6C923 /* LogParser.swift */,
+				BB50F7A41C25C99A00E6C923 /* LineGenerator.swift */,
+				BB16FCC31C2692C4005918BE /* ByteRegex.swift */,
+				BB50F7A91C25C99A00E6C923 /* sourcekitd.h */,
+				BB50F7C91C25CB0200E6C923 /* sourcekitd.framework */,
+			);
+			name = refactord;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D5B49AC048680CD000E48DA /* Refactorator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "Refactorator" */;
+			buildPhases = (
+				8D5B49B1048680CD000E48DA /* Sources */,
+				8D5B49B3048680CD000E48DA /* Frameworks */,
+				BB5251F8160A2EF700276EB3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB50F7C31C25CA7800E6C923 /* PBXTargetDependency */,
+			);
+			name = Refactorator;
+			productInstallPath = "$(HOME)/Library/Bundles";
+			productName = QuietXcode;
+			productReference = 8D5B49B6048680CD000E48DA /* Refactorator.xcplugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+		BB50F7BB1C25CA3400E6C923 /* refactord */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB50F7C01C25CA3400E6C923 /* Build configuration list for PBXNativeTarget "refactord" */;
+			buildPhases = (
+				BB50F7B81C25CA3400E6C923 /* Sources */,
+				BB50F7B91C25CA3400E6C923 /* Frameworks */,
+				BB50F7BA1C25CA3400E6C923 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = refactord;
+			productName = refactord;
+			productReference = BB50F7BC1C25CA3400E6C923 /* refactord */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0720;
+				LastUpgradeCheck = 0720;
+				TargetAttributes = {
+					BB50F7BB1C25CA3400E6C923 = {
+						CreatedOnToolsVersion = 7.2;
+					};
+				};
+			};
+			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "Refactorator" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+				en,
+			);
+			mainGroup = 089C166AFE841209C02AAC07 /* QuietXcode */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D5B49AC048680CD000E48DA /* Refactorator */,
+				BB50F7BB1C25CA3400E6C923 /* refactord */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BB5251F8160A2EF700276EB3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB50F7591C2559F800E6C923 /* RefactoratorPlugin.xib in Resources */,
+				BB82F0CD1913D15F0015AE7A /* README.md in Resources */,
+				BBBD4F591A4AF4FA009969E1 /* log.html in Resources */,
+				BB50F7C41C25CA7E00E6C923 /* refactord in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D5B49B1048680CD000E48DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB50F7581C2559F800E6C923 /* RefactoratorPlugin.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB50F7B81C25CA3400E6C923 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB50F7C51C25CAAC00E6C923 /* main.m in Sources */,
+				BB50F7C61C25CAAC00E6C923 /* Refactorator.swift in Sources */,
+				BB50F7C71C25CAAC00E6C923 /* LogParser.swift in Sources */,
+				BB50F7C81C25CAAC00E6C923 /* LineGenerator.swift in Sources */,
+				BB16FCC51C26964C005918BE /* ByteRegex.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BB50F7C31C25CA7800E6C923 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB50F7BB1C25CA3400E6C923 /* refactord */;
+			targetProxy = BB50F7C21C25CA7800E6C923 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB913B08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = "$(HOME)";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_GC = unsupported;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LD_RUNPATH_SEARCH_PATHS = /Developer;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.johnholdsworth.Refactorator;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "Refactorator-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = Debug;
+		};
+		1DEB913F08733D840010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 3.5;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_PREPROCESSOR_DEFINITIONS = "";
+				INSTALL_PATH = "$(HOME)/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		BB50F7C11C25CA3400E6C923 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(TOOLCHAIN_DIR)/usr/lib";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(TOOLCHAIN_DIR)/usr/lib";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "refactord/refactord-Bridging-Header.h";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "Refactorator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913B08733D840010E9CD /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "Refactorator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB913F08733D840010E9CD /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BB50F7C01C25CA3400E6C923 /* Build configuration list for PBXNativeTarget "refactord" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB50F7C11C25CA3400E6C923 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}

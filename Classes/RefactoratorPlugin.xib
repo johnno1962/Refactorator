@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9531"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="9531"/>
+        <capability name="box content view" minToolsVersion="7.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="RefactoratorPlugin">
+            <connections>
+                <outlet property="confirmButton" destination="qIb-pd-f9l" id="nrK-o6-0ee"/>
+                <outlet property="newValueField" destination="EjS-RD-XyX" id="9hD-ab-2GJ"/>
+                <outlet property="oldValueField" destination="0D9-Ck-LqG" id="oNQ-2I-7c6"/>
+                <outlet property="panel" destination="lk1-Qp-q67" id="Q39-bV-LhI"/>
+                <outlet property="performButton" destination="tQ8-VM-fSv" id="NH2-3d-Vyd"/>
+                <outlet property="refactorItem" destination="4mv-ck-HbT" id="MiG-2W-eQ6"/>
+                <outlet property="usrField" destination="JKu-cr-lrv" id="FYf-o2-hLm"/>
+                <outlet property="webView" destination="4d3-do-FTr" id="Lx6-yQ-ud5"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Refactorator" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="lk1-Qp-q67" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="139" y="81" width="491" height="407"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <view key="contentView" id="mUl-bO-9tT">
+                <rect key="frame" x="0.0" y="0.0" width="491" height="407"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <box title="Box" borderType="line" titlePosition="noTitle" id="uG8-RC-rOY">
+                        <rect key="frame" x="8" y="327" width="474" height="71"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <view key="contentView" id="zhS-xt-SMj">
+                            <rect key="frame" x="1" y="1" width="472" height="69"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="5cq-YS-STf">
+                                    <rect key="frame" x="11" y="41" width="65" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Selection:" id="BJu-MT-qxa">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField toolTip="&quot;USR&quot; of code entity" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="JKu-cr-lrv">
+                                    <rect key="frame" x="11" y="13" width="451" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Entity USR" id="mgw-iQ-REp">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <button toolTip="Used to rename method arguments" verticalHuggingPriority="750" id="bVM-Jx-F0s">
+                                    <rect key="frame" x="386" y="32" width="79" height="32"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                    <buttonCell key="cell" type="push" title="Refine" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="9db-b9-IIp">
+                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                    </buttonCell>
+                                    <connections>
+                                        <action selector="startRefactor:" target="-2" id="dHo-0I-gcv"/>
+                                    </connections>
+                                </button>
+                                <textField toolTip="Current Symbol Identifier" verticalHuggingPriority="750" id="0D9-Ck-LqG">
+                                    <rect key="frame" x="82" y="38" width="302" height="22"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="eq9-Ur-2JI">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                            </subviews>
+                        </view>
+                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    </box>
+                    <webView id="4d3-do-FTr">
+                        <rect key="frame" x="11" y="66" width="468" height="252"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12" plugInsEnabled="NO" javaEnabled="NO" javaScriptCanOpenWindowsAutomatically="NO" allowsAnimatedImages="NO" allowsAnimatedImageLooping="NO">
+                            <nil key="identifier"/>
+                        </webPreferences>
+                        <connections>
+                            <outlet property="UIDelegate" destination="-2" id="Ucf-qP-TIC"/>
+                            <outlet property="downloadDelegate" destination="-2" id="Nq6-LI-y8f"/>
+                            <outlet property="frameLoadDelegate" destination="-2" id="VHh-Qi-Snm"/>
+                            <outlet property="policyDelegate" destination="-2" id="Wjw-3L-O2R"/>
+                            <outlet property="resourceLoadDelegate" destination="-2" id="ZY3-lC-eo1"/>
+                        </connections>
+                    </webView>
+                    <box title="Box" borderType="line" titlePosition="noTitle" id="Nfx-hy-xgx">
+                        <rect key="frame" x="8" y="9" width="474" height="45"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                        <view key="contentView" id="anc-tW-tBp">
+                            <rect key="frame" x="1" y="1" width="472" height="43"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField toolTip="New Name for Idenifier" verticalHuggingPriority="750" id="EjS-RD-XyX">
+                                    <rect key="frame" x="123" y="11" width="265" height="22"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="keH-J1-CMZ">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <action selector="performClick:" target="tQ8-VM-fSv" id="Z7D-8y-LWk"/>
+                                    </connections>
+                                </textField>
+                                <button toolTip="Preview Idenifier Change" verticalHuggingPriority="750" id="tQ8-VM-fSv">
+                                    <rect key="frame" x="7" y="5" width="114" height="32"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <buttonCell key="cell" type="push" title="Refactor To:" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="neP-2E-oCV">
+                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                    </buttonCell>
+                                    <connections>
+                                        <action selector="performRefactor:" target="-2" id="07a-yH-OBC"/>
+                                    </connections>
+                                </button>
+                                <button toolTip="Save Changes to Disk" verticalHuggingPriority="750" id="qIb-pd-f9l">
+                                    <rect key="frame" x="389" y="4" width="81" height="32"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                    <buttonCell key="cell" type="push" title="Apply" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="yVh-rD-gFw">
+                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                        <connections>
+                                            <action selector="confirmRefactor:" target="-2" id="LxL-Db-zlu"/>
+                                        </connections>
+                                    </buttonCell>
+                                </button>
+                            </subviews>
+                        </view>
+                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    </box>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="NH5-7t-75B"/>
+            </connections>
+            <point key="canvasLocation" x="307.5" y="334.5"/>
+        </window>
+        <menuItem title="Swift !" id="4mv-ck-HbT">
+            <modifierMask key="keyEquivalentModifierMask"/>
+            <connections>
+                <action selector="startRefactor:" target="-2" id="5YT-Q4-nn8"/>
+            </connections>
+        </menuItem>
+    </objects>
+</document>

@@ -1,0 +1,25 @@
+<html><header><title>Swift Refactorator</title><style>
+
+body, table { font: 9pt Arial; margin: 0px; border: 3px inset lightgrey; }
+div { white-space: nowrap; }
+span { float: left; width: 150px; background-color: lightgrey; }
+a:link { color: black; }
+
+</style><script>
+
+function $(id) {
+    return id ? document.getElementById(id) : $('log');
+}
+
+function append( html ) {
+    $().innerHTML += html
+    scrollTo(0,1000000)
+}
+
+function showPatch( file, name, line, col, text ) {
+    append( "<div><span><a class=link href='"+file+"___"+line+"' title='line="+line+", col="+col+"'>"+name+"</a>:"+line+"</span>&nbsp;"+text.replace(/ /g, "&nbsp;")+"</div>" )
+}
+
+</script></header>
+<body>
+<div id='log'></div>
