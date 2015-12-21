@@ -38,9 +38,9 @@
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="5cq-YS-STf">
-                                    <rect key="frame" x="11" y="41" width="65" height="17"/>
+                                    <rect key="frame" x="10" y="41" width="62" height="17"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Selection:" id="BJu-MT-qxa">
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Identifier:" id="BJu-MT-qxa">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -56,7 +56,7 @@
                                     </textFieldCell>
                                 </textField>
                                 <button toolTip="Used to rename method arguments" verticalHuggingPriority="750" id="bVM-Jx-F0s">
-                                    <rect key="frame" x="386" y="32" width="79" height="32"/>
+                                    <rect key="frame" x="386" y="31" width="80" height="32"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="push" title="Refine" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="9db-b9-IIp">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -67,7 +67,7 @@
                                     </connections>
                                 </button>
                                 <textField toolTip="Current Symbol Identifier" verticalHuggingPriority="750" id="0D9-Ck-LqG">
-                                    <rect key="frame" x="82" y="38" width="302" height="22"/>
+                                    <rect key="frame" x="78" y="38" width="306" height="22"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="eq9-Ur-2JI">
                                         <font key="font" metaFont="system"/>
@@ -101,8 +101,17 @@
                             <rect key="frame" x="1" y="1" width="472" height="43"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="iWO-3H-xBd">
+                                    <rect key="frame" x="10" y="14" width="71" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Change to:" id="iwo-Vf-Quu">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
                                 <textField toolTip="New Name for Idenifier" verticalHuggingPriority="750" id="EjS-RD-XyX">
-                                    <rect key="frame" x="123" y="11" width="265" height="22"/>
+                                    <rect key="frame" x="87" y="11" width="212" height="22"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="keH-J1-CMZ">
                                         <font key="font" metaFont="system"/>
@@ -110,30 +119,30 @@
                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     </textFieldCell>
                                     <connections>
-                                        <action selector="performClick:" target="tQ8-VM-fSv" id="Z7D-8y-LWk"/>
+                                        <outlet property="nextKeyView" destination="tQ8-VM-fSv" id="UsZ-Au-GWI"/>
                                     </connections>
                                 </textField>
-                                <button toolTip="Preview Idenifier Change" verticalHuggingPriority="750" id="tQ8-VM-fSv">
-                                    <rect key="frame" x="7" y="5" width="114" height="32"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <buttonCell key="cell" type="push" title="Refactor To:" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="neP-2E-oCV">
-                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
-                                    </buttonCell>
-                                    <connections>
-                                        <action selector="performRefactor:" target="-2" id="07a-yH-OBC"/>
-                                    </connections>
-                                </button>
                                 <button toolTip="Save Changes to Disk" verticalHuggingPriority="750" id="qIb-pd-f9l">
-                                    <rect key="frame" x="389" y="4" width="81" height="32"/>
+                                    <rect key="frame" x="386" y="4" width="80" height="32"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                    <buttonCell key="cell" type="push" title="Apply" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="yVh-rD-gFw">
+                                    <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="yVh-rD-gFw">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="system"/>
                                         <connections>
                                             <action selector="confirmRefactor:" target="-2" id="LxL-Db-zlu"/>
                                         </connections>
                                     </buttonCell>
+                                </button>
+                                <button toolTip="Preview Idenifier Change" verticalHuggingPriority="750" id="tQ8-VM-fSv">
+                                    <rect key="frame" x="302" y="4" width="88" height="32"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                    <buttonCell key="cell" type="push" title="Preview" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="neP-2E-oCV">
+                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                    </buttonCell>
+                                    <connections>
+                                        <action selector="performRefactor:" target="-2" id="07a-yH-OBC"/>
+                                    </connections>
                                 </button>
                             </subviews>
                         </view>

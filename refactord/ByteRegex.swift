@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 20/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/ByteRegex.swift#1 $
+//  $Id: //depot/Refactorator/refactord/ByteRegex.swift#2 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -32,11 +32,11 @@ class ByteRegex {
             regerror( error, &regex, &errbuff, errbuff.count )
             xcode.error( "Error in regex '\(pattern)': \(String.fromCString( errbuff ))" )
         }
-        groups = pattern.characters.filter { $0 == "(" } .count
+        groups = 1 + pattern.characters.filter { $0 == "(" } .count
     }
 
     func match( input: NSData ) -> [regmatch_t]? {
-        var matches = [regmatch_t]( count: 1+groups, repeatedValue: regmatch_t() )
+        var matches = [regmatch_t]( count: groups, repeatedValue: regmatch_t() )
         let error = regexec( &regex, UnsafePointer<Int8>(input.bytes), matches.count, &matches, 0 )
         if ( error != 0 && error != REG_NOMATCH ) {
             var errbuff = [Int8]( count: 1024, repeatedValue: 0 )

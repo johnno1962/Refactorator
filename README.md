@@ -1,23 +1,25 @@
 ## Refactorator
 
-Refactorator is an Xcode plugin for refactoring Swift code. You can rename 
+Refactorator is an Xcode plugin for refactoring Swift code. It will rename 
 public or internal vars, functions, enums etc. For private and local entities
 use Xcode's existing "Edit All in Scope" functionality. 
 
-![Icon](http://injectionforxcode.johnholdsworth.com/refactorator.png)
+![Icon](http://injectionforxcode.johnholdsworth.com/refactor.png)
 
 To use, download the source for the project and build to install the plugin
 then restart Xcode. Select a symbol and use "Right-click/Refactor/Swift !"
 to list the places in your code that declare and refer to that symbol.
-Enter a new value for the identifier in the bottom textfeild and press
-the "Refactor To:" button to view the changes that would be made.
-Press the "Apply" button to save these changes to disk.
+Enter a new value for the identifier in the bottom textfield and press
+the "Preview" button to view the changes that would be made.
+Press the "Save" button to save these changes to disk.
 
-Refactorator was originally suggested as being feasable by @Daniel1of1 shortly after
+Refactorator was originally suggested as being feasible by @Daniel1of1 shortly after
 Swift came out and uses [SourceKit](http://www.jpsim.com/uncovering-sourcekit/) 
-distributed with Xcode, building on the work by @jpsim. The final peice of the
+distributed with Xcode, building on the work by @jpsim. The final piece of the
 puzzle was the Open Sourcing of the SourceKit API by Apple as a part of Swift.
-It's main limitation is that it does not currently refactor across targets.
+Source files are parsed using the same XPC calls that Xcode uses when it indexes
+a project. The plugin's main limitation is that it does not currently refactor
+across targets in the interests of speed.
 
 Happy Christmas!
 
@@ -39,4 +41,4 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMA
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-This source includes a headerfile sourcekit.h from Apple's Swift distribution under Apache License v2.0
+This source includes a header file "sourcekit.h" from Apple's Swift distribution under Apache License v2.0
