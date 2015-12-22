@@ -24,11 +24,8 @@ class LogParser {
 
         for log in logs {
             for line in LineGenerator( command: "gunzip <\"\(log)\"", eol:"\r" ).sequence() {
-                print( line )
-                if line.containsString( " -primary-file \(filePath) " ) {
-                    return cleanup( line.componentsSeparatedByString( " " ) )
-                }
-                else if line.containsString( " -primary-file \"\(filePath)\" " ) {
+                if line.containsString( " -primary-file \(filePath) " ) ||
+                    line.containsString( " -primary-file \"\(filePath)\" " ) {
                     let spaceToTheLeftOfAnOddNumberOfQoutes = " (?=[^\"]*\"(([^\"]*\"){2})*[^\"]* -o )"
                     var line = line.stringByReplacingOccurrencesOfString( spaceToTheLeftOfAnOddNumberOfQoutes,
                         withString: "___", options: .RegularExpressionSearch, range: nil )
