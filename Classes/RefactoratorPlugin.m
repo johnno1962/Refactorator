@@ -5,14 +5,22 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#5 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#13 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+#pragma clang diagnostic ignored "-Wimplicit-retain-self"
+#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
+
 #import "RefactoratorPlugin.h"
-#import <WebKit/WebKit.h>
-#import <objc/runtime.h>
+
+@import Cocoa;
+@import WebKit;
+@import ObjectiveC.runtime;
 
 static RefactoratorPlugin *refactoratorPlugin;
 
@@ -31,6 +39,8 @@ static RefactoratorPlugin *refactoratorPlugin;
 @public
     IBOutlet NSMenuItem *refactorItem;
 }
+
+// MARK: Initialisation
 
 + (void)pluginDidLoad:(NSBundle *)plugin {
     if ([[NSBundle mainBundle].infoDictionary[@"CFBundleName"] isEqual:@"Xcode"]) {
@@ -52,6 +62,7 @@ static RefactoratorPlugin *refactoratorPlugin;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
+
     if ( ![[NSBundle bundleForClass:[self class]] loadNibNamed:[self className] owner:self topLevelObjects:NULL] ) {
         if ( [[NSAlert alertWithMessageText:@"Refactorator Plugin:"
                               defaultButton:@"OK" alternateButton:@"Goto GitHub" otherButton:nil
@@ -61,18 +72,18 @@ static RefactoratorPlugin *refactoratorPlugin;
         return;
     }
 
-    NSMenu *productMenu = [[NSApp mainMenu] itemWithTitle:@"Edit"].submenu;
-    NSMenu *refactorMenu = [productMenu itemWithTitle:@"Refactor"].submenu;
+    NSMenu *editMenu = [[NSApp mainMenu] itemWithTitle:@"Edit"].submenu;
+    NSMenu *refactorMenu = [editMenu itemWithTitle:@"Refactor"].submenu;
     [refactorMenu insertItem:refactorItem atIndex:0];
+
+    [self swizzleClass:NSClassFromString(@"DVTSourceTextView")
+              exchange:@selector(menuForEvent:)
+                  with:@selector(rf_menuForEvent:)];
 
     IDEWorkspaceWindowControllerClass = NSClassFromString(@"IDEWorkspaceWindowController");
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(workspaceDidChange:)
                                                  name:NSWindowDidBecomeKeyNotification object:nil];
-
-    [self swizzleClass:NSClassFromString(@"DVTSourceTextView")
-              exchange:@selector(menuForEvent:)
-                  with:@selector(rf_menuForEvent:)];
 }
 
 - (void)swizzleClass:(Class)aClass exchange:(SEL)origMethod with:(SEL)altMethod
@@ -81,17 +92,11 @@ static RefactoratorPlugin *refactoratorPlugin;
                                    class_getInstanceMethod(aClass, altMethod));
 }
 
-
-- (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame {
-    [[NSAlert alertWithMessageText:@"Refactorator" defaultButton:@"OK" alternateButton:nil otherButton:nil
-         informativeTextWithFormat:@"JavaScript Alert: %@", message] runModal];
-}
-
 - (void)workspaceDidChange:(NSNotification *)notification {
     NSWindow *object = [notification object];
-    NSWindowController *currentWindowController = [object windowController];
-    if ([currentWindowController isKindOfClass:IDEWorkspaceWindowControllerClass])
-        lastWindowController = currentWindowController;
+    NSWindowController *newWindowController = [object windowController];
+    if ([newWindowController isKindOfClass:IDEWorkspaceWindowControllerClass])
+        lastWindowController = newWindowController;
 }
 
 - (NSString *)currentFile {
@@ -102,16 +107,18 @@ static RefactoratorPlugin *refactoratorPlugin;
     return [self.currentFile hasSuffix:@".swift"];
 }
 
-- (IBAction)startRefactor:(id)sender {
+// MARK: Refactoring
 
-    NSTextView *textView = self.textView;
-    NSRange range = textView.selectedRange;
+- (IBAction)startRefactor:(id)sender {
 
     NSURL *logURL = [[NSBundle bundleForClass:[self class]] URLForResource:@"log" withExtension:@"html"];
     [webView.mainFrame loadRequest:[NSURLRequest requestWithURL:logURL]];
 
+    NSTextView *textView = self.textView;
+    NSRange range = textView.selectedRange;
+
     if ( [sender isKindOfClass:[NSMenuItem class]] )
-        oldValueField.stringValue = [textView.textStorage.string substringWithRange:range];
+        oldValueField.stringValue = [textView.string substringWithRange:range];
 
     newValueField.stringValue = oldValueField.stringValue;
     performButton.enabled = confirmButton.enabled = FALSE;
@@ -137,10 +144,12 @@ static RefactoratorPlugin *refactoratorPlugin;
     dispatch_async( dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [self try:^{
             NSLog( @"Refactorating: %@ %d %@", refactorator, offset, [self logDirectory] );
-            int refs = [refactorator refactorFile:self.currentFile byteOffset:offset old:oldValueField.stringValue
+            int refs = [refactorator refactorFile:self.currentFile byteOffset:offset
+                                         oldValue:oldValueField.stringValue
                                            logDir:[self logDirectory] plugin:self];
             dispatch_async( dispatch_get_main_queue(), ^{
-                NSString *html = @"<br><b>Indexing Complete. Symbol referenced in %d places. <a href='http://injectionforxcode.johnholdsworth.com/refactorator.html'>usage</a><p>";
+                NSString *html = @"<br><b>Indexing Complete. Symbol referenced in %d places. "
+                    "<a href='http://injectionforxcode.johnholdsworth.com/refactorator.html'>usage</a><p>";
                 [webView.windowScriptObject callWebScriptMethod:@"append" withArguments:@[[NSString stringWithFormat:html, refs]]];
                 performButton.enabled = TRUE;
             } );
@@ -161,6 +170,12 @@ static RefactoratorPlugin *refactoratorPlugin;
     } );
 }
 
+- (oneway void)log:(NSString *)msg {
+    dispatch_async( dispatch_get_main_queue(), ^{
+        [webView.windowScriptObject callWebScriptMethod:@"append" withArguments:@[msg]];
+    } );
+}
+
 - (IBAction)performRefactor:(id)sender {
     [self try:^{
         [refactorator refactorFrom:oldValueField.stringValue to:newValueField.stringValue];
@@ -170,8 +185,10 @@ static RefactoratorPlugin *refactoratorPlugin;
 
 - (IBAction)confirmRefactor:(id)sender {
     [self try:^{
-        [refactorator confirmRefactor];
         confirmButton.enabled = FALSE;
+        int patched = [refactorator confirmRefactor];
+        NSString *msg = [NSString stringWithFormat:@"<p><b>%d files modified.</b><br>", patched];
+        [webView.windowScriptObject callWebScriptMethod:@"append" withArguments:@[msg]];
     }];
 }
 
@@ -188,6 +205,8 @@ static RefactoratorPlugin *refactoratorPlugin;
     [refactorTask terminate];
     refactorTask = nil;
 }
+
+// MARK: WebView
 
 - (void)webView:(WebView *)aWebView decidePolicyForNavigationAction:(NSDictionary *)actionInformation
         request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id < WebPolicyDecisionListener >)listener {
@@ -208,14 +227,24 @@ static RefactoratorPlugin *refactoratorPlugin;
     panel.title = aTitle;
 }
 
+- (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame {
+    [self error:[NSString stringWithFormat:@"JavaScript alert: %@", message]];
+}
+
+- (void)webView:(WebView *)webView addMessageToConsole:(NSDictionary *)message {
+    [self error:[NSString stringWithFormat:@"JavaScript problem: %@", message]];
+}
+
+// MARK: Utilities
+
 // Thanks https://github.com/krzysztofzablocki/KZLinkedConsole
-// I've no idea how this works..
+// I've no idea how this works but it does!
 
 - (void)selectLine:(NSString *)lineString {
     NSTextView *textView = [self textView];
     NSString *text = textView.string;
 
-    int line = lineString.intValue, currentLine = 1, index = 0;
+    NSUInteger line = lineString.intValue, currentLine = 1, index = 0;
     for (; index < text.length; currentLine++) {
         NSRange lineRange = [text lineRangeForRange:NSMakeRange(index, 0)];
         index = NSMaxRange(lineRange);
@@ -258,3 +287,5 @@ static RefactoratorPlugin *refactoratorPlugin;
 }
 
 @end
+
+#pragma clang diagnostic pop

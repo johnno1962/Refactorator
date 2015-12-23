@@ -1,11 +1,11 @@
 //
 //  LogParser.swift
-//  refactoratord
+//  refactord
 //
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/LogParser.swift#4 $
+//  $Id: //depot/Refactorator/refactord/LogParser.swift#12 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -20,12 +20,11 @@ class LogParser {
         logs = LineGenerator( command: "ls -t \"\(logDir)\"/*.xcactivitylog", eol: "\n" ).sequence().map { $0 }
     }
 
-    func argumentsForFile( filePath: String ) -> [String]? {
+    func argumentsMatching( matcher: ( line: String ) -> Bool ) -> [String]? {
 
         for log in logs {
             for line in LineGenerator( command: "gunzip <\"\(log)\"", eol:"\r" ).sequence() {
-                if line.containsString( " -primary-file \(filePath) " ) ||
-                    line.containsString( " -primary-file \"\(filePath)\" " ) {
+                if matcher( line: line ) {
                     let spaceToTheLeftOfAnOddNumberOfQoutes = " (?=[^\"]*\"(([^\"]*\"){2})*[^\"]* -o )"
                     var line = line.stringByReplacingOccurrencesOfString( spaceToTheLeftOfAnOddNumberOfQoutes,
                         withString: "___", options: .RegularExpressionSearch, range: nil )
@@ -39,21 +38,16 @@ class LogParser {
         return nil
     }
 
-    func cleanup( args: [String] ) -> [String] {
+    private func cleanup( args: [String] ) -> [String] {
         var out = [String]()
 
-        var i = 2
+        var i = 3
         while i < args.count {
-            let arg = args[i]
-            if arg.hasPrefix( "-target" ) || arg.hasPrefix( "-emit-" ) {
-                i += 2
-                continue
-            }
-            else if arg == "-o" {
+            if args[i] == "-o" {
                 break
             }
 
-            out.append( arg )
+            out.append( args[i] )
             i += 1
         }
 

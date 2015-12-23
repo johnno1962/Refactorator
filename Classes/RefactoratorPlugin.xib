@@ -46,7 +46,7 @@
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                     </textFieldCell>
                                 </textField>
-                                <textField toolTip="&quot;USR&quot; of code entity" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="JKu-cr-lrv">
+                                <textField toolTip="&quot;Unified Symbol Resolution&quot; of code entity" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="JKu-cr-lrv">
                                     <rect key="frame" x="11" y="13" width="451" height="17"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Entity USR" id="mgw-iQ-REp">
