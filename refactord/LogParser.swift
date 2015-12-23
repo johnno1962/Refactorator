@@ -5,9 +5,9 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/LogParser.swift#12 $
+//  $Id: //depot/Swifactor/refactord/LogParser.swift#1 $
 //
-//  Repo: https://github.com/johnno1962/Refactorator
+//  Repo: https://github.com/johnno1962/Swifactor
 //
 
 import Foundation

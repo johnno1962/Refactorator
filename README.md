@@ -1,14 +1,14 @@
-## Refactorator
+# Swifactor Xcode Plugin
 
-Refactorator is an Xcode plugin for refactoring Swift code. It will rename 
+Swifactor is an Xcode plugin for refactoring Swift code. It will rename 
 public or internal vars, functions, enums etc. For private and local entities
 use Xcode's existing "Edit All in Scope" functionality. It uses 
-[SourceKit](http://www.jpsim.com/uncovering-sourcekit/) an XPC service
+[SourceKit](http://www.jpsim.com/uncovering-sourcekit/), an XPC service
 distributed with Xcode to parse your project's Swift sources to find symbol
 references.
 
-Where a symbol is defined in a framework refactorator will now also parse
-the framework if you start in the referring module.
+Where a symbol is defined in a framework Swifactor will now also parse
+across targets to the framework if you start in the referring module.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/refactor.png)
 
@@ -19,13 +19,12 @@ Enter a new value for the identifier in the bottom textfield and press
 the "Preview" button to view the changes that would be made.
 Press the "Save" button to save these changes to disk.
 
-Refactorator was originally suggested as being feasible by @Daniel1of1 shortly after
-Swift came out and building on the work by @jpsim on [SourceKitten](https://github.com/jpsim/SourceKitten).
-The final piece of the puzzle was the Open Sourceing of the SourceKit API by Apple as a part of Swift.
+Swifactor was originally suggested as being feasible by @Daniel1of1 shortly after
+Swift came out building on the work by @jpsim on [SourceKitten](https://github.com/jpsim/SourceKitten).
+The final piece of the puzzle was the Open Sourcing of the SourceKit API by Apple as a part of Swift.
 Source files are parsed using the same XPC calls that Xcode uses when it indexes
-a project.
-
-Happy Christmas!
+a project. It is implemented as a daemon process so as not to affect the stability of Xcode.
+Final thanks to @orta for rescuing the project from it's original name Refactorator!
 
 ### MIT License
 

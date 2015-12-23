@@ -41,7 +41,7 @@
 		<string>F41BD31E-2683-44B8-AE7F-5F09E919790E</string>
 	</array>
 	<key>NSPrincipalClass</key>
-	<string>RefactoratorPlugin</string>
+	<string>SwifactorPlugin</string>
 	<key>XC4Compatible</key>
 	<true/>
 	<key>XCGCReady</key>

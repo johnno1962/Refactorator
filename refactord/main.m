@@ -5,18 +5,18 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/main.m#4 $
+//  $Id: //depot/Swifactor/refactord/main.m#1 $
 //
-//  Repo: https://github.com/johnno1962/Refactorator
+//  Repo: https://github.com/johnno1962/Swifactor
 //
 
-#import "../Classes/RefactoratorPlugin.h"
+#import "../Classes/SwifactorPlugin.h"
 #import "refactord-Swift.h"
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        Refactorator *service = [Refactorator new];
-        NSConnection *xcodeConnection = [NSConnection serviceConnectionWithName:@REFACTORATOR_SERVICE rootObject:service];
+        Swifactor *service = [Swifactor new];
+        NSConnection *xcodeConnection = [NSConnection serviceConnectionWithName:@SWIFACTOR_SERVICE rootObject:service];
         [[NSRunLoop mainRunLoop] run];
         xcodeConnection = nil;
     }

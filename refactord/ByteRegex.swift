@@ -5,9 +5,9 @@
 //  Created by John Holdsworth on 20/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/ByteRegex.swift#4 $
+//  $Id: //depot/Swifactor/refactord/ByteRegex.swift#1 $
 //
-//  Repo: https://github.com/johnno1962/Refactorator
+//  Repo: https://github.com/johnno1962/Swifactor
 //
 
 import Foundation

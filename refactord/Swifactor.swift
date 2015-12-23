@@ -1,13 +1,13 @@
 //
-//  Refactorator.swift
+//  Swifactor.swift
 //  refactord
 //
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#19 $
+//  $Id: //depot/Swifactor/refactord/Swifactor.swift#2 $
 //
-//  Repo: https://github.com/johnno1962/Refactorator
+//  Repo: https://github.com/johnno1962/Swifactor
 //
 
 import Foundation
@@ -33,6 +33,7 @@ struct Entity {
     let line: Int32
     let col: Int32
 
+    /** char based regex to find line, column and text in source */
     func regex( text: String ) -> ByteRegex {
         var pattern = "^"
         var line = self.line
@@ -44,6 +45,7 @@ struct Entity {
         return ByteRegex( pattern: pattern )
     }
 
+    /** text logged to refactoring console */
     func patchText( contents: NSData, value: String ) -> String? {
         if let matches = regex( value ).match( contents ) {
             let out = NSMutableData()
@@ -58,18 +60,19 @@ struct Entity {
     }
 }
 
-var xcode: RefactoratorResponse!
+var xcode: SwifactorResponse!
 
-@objc public class Refactorator: NSObject, RefactoratorRequest {
+@objc public class Swifactor: NSObject, SwifactorRequest {
 
     var usrToPatch: String!
     var patches = [Entity]()
     var patched = [String:NSMutableData]()
 
-    public func refactorFile( filePath: String, byteOffset: Int32, oldValue: String, logDir: String, plugin: RefactoratorResponse ) -> Int32 {
+    public func refactorFile( filePath: String, byteOffset: Int32, oldValue: String, logDir: String, plugin: SwifactorResponse ) -> Int32 {
         NSLog( "refactord -- refactorFile: \(filePath) \(byteOffset) \(logDir)")
         xcode = plugin
 
+        /** find command line arguments for file from build logs */
         guard let argv = LogParser( logDir: logDir ).argumentsMatching( { line in
                 line.containsString( " -primary-file \(filePath) " ) ||
                 line.containsString( " -primary-file \"\(filePath)\" " ) } ) else {
@@ -80,6 +83,7 @@ var xcode: RefactoratorResponse!
         sourcekitd_initialize()
         patches = [Entity]()
 
+        /** find entity at current selection */
         let req = sourcekitd_request_dictionary_create( nil, nil, 0 )
 
         sourcekitd_request_dictionary_set_uid( req, requestID, cursorRequestID )
@@ -112,6 +116,7 @@ var xcode: RefactoratorResponse!
             return -1
         }
 
+        // processing overrides doesn't seem to be feasible
 //        let overrides = sourcekitd_variant_dictionary_get_value( dict, overridesID )
 //        sourcekitd_variant_array_apply( overrides ) { (_,dict) in
 //            usr = sourcekitd_variant_dictionary_get_string( dict, usrID )
@@ -121,8 +126,10 @@ var xcode: RefactoratorResponse!
         usrToPatch = String.fromCString( usr )
         plugin.foundUSR( usrToPatch )
 
+        /** index all sources included in current compiler invocation */
         processModuleSources( argv, args: args, oldValue: oldValue )
 
+        /** if entity is in a framework index each source of that module as well */
         let module = sourcekitd_variant_dictionary_get_string( dict, moduleID )
         if module != nil {
             let module = String.fromCString( module )!
@@ -172,6 +179,8 @@ var xcode: RefactoratorResponse!
         sourcekitd_variant_array_apply( entities ) { (_,dict) in
 
             let entityUSR = String.fromCString( sourcekitd_variant_dictionary_get_string( dict, usrID ) )
+
+            // processing overrides doesn't seem to be possible
 //            let related = sourcekitd_variant_dictionary_get_value( dict, relatedID )
 //            sourcekitd_variant_array_apply( related ) { (_,dict) in
 //                thisUSR = String.fromCString( sourcekitd_variant_dictionary_get_string( dict, usrID ) )?
@@ -181,6 +190,7 @@ var xcode: RefactoratorResponse!
 //            }
 
             if entityUSR == self.usrToPatch {
+
                 let entity = Entity( file: file,
                     line: Int32(sourcekitd_variant_dictionary_get_int64( dict, lineID )),
                     col: Int32(sourcekitd_variant_dictionary_get_int64( dict, colID )) )
@@ -192,6 +202,7 @@ var xcode: RefactoratorResponse!
                         "\(entityUSR) \(entity.line) \(entity.col)" )
                 }
 
+                /** if entity == current selection's entity, log and store for patching later */
                 if let contents = contents, patch = entity.patchText( contents, value: oldValue ) {
                     xcode.willPatchFile( file, line:entity.line, col: entity.col, text: patch )
                     self.patches.append( entity )
@@ -216,12 +227,14 @@ var xcode: RefactoratorResponse!
             }
             if let contents = patched[entity.file], matches = entity.regex( oldValue ).match( contents ) {
 
+                /** apply patch, replacing newvalue for entity reference */
                 let out = NSMutableData()
                 out.appendData( contents.subdataWithRange( NSMakeRange( 0, Int(matches[2].rm_so) ) ) )
                 out.appendString( newValue )
                 out.appendData( contents.subdataWithRange( NSMakeRange( Int(matches[2].rm_eo),
                                                         contents.length-Int(matches[2].rm_eo) ) ) )
 
+                /** log and update in-memory version of source file */
                 if let patch = entity.patchText( out, value: newValue ) {
                     blocks.append( { xcode.willPatchFile( entity.file, line:entity.line, col: entity.col, text: patch ) } )
                     patched[entity.file] = out
@@ -229,6 +242,7 @@ var xcode: RefactoratorResponse!
             }
         }
 
+        /** patches performed in reverse in case offsets changed */
         for block in blocks.reverse() {
             block()
         }
