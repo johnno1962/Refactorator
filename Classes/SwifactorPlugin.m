@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Swifactor/Classes/SwifactorPlugin.m#1 $
+//  $Id: //depot/Swifactor/Classes/SwifactorPlugin.m#2 $
 //
 //  Repo: https://github.com/johnno1962/Swifactor
 //

@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Swifactor/refactord/Swifactor.swift#2 $
+//  $Id: //depot/Swifactor/refactord/Swifactor.swift#3 $
 //
 //  Repo: https://github.com/johnno1962/Swifactor
 //
@@ -136,7 +136,7 @@ var xcode: SwifactorResponse!
             xcode.log( "<br><b>Framework '\(module)':</b><br>" )
 
             guard let argv = LogParser( logDir: logDir ).argumentsMatching( { line in
-                line.containsString( " -module-name \(module) " ) || line.containsString( " -primary-file " ) } ) else {
+                line.containsString( " -module-name \(module) " ) && line.containsString( " -primary-file " ) } ) else {
                         xcode.error( "Could not find module compiler arguments in \(logDir). Have you built the project?" )
                         return -1
             }
