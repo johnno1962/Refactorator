@@ -1,13 +1,13 @@
 //
-//  SwifactorPlugin.m
-//  Swifactor
+//  RefactoratorPlugin.m
+//  Refactorator
 //
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Swifactor/Classes/SwifactorPlugin.m#2 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#16 $
 //
-//  Repo: https://github.com/johnno1962/Swifactor
+//  Repo: https://github.com/johnno1962/Refactorator
 //
 
 #pragma clang diagnostic push
@@ -16,21 +16,21 @@
 #pragma clang diagnostic ignored "-Wimplicit-retain-self"
 #pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
 
-#import "SwifactorPlugin.h"
+#import "RefactoratorPlugin.h"
 
 @import Cocoa;
 @import WebKit;
 @import ObjectiveC.runtime;
 
-static SwifactorPlugin *swifactorPlugin;
+static RefactoratorPlugin *swifactorPlugin;
 
-@implementation SwifactorPlugin {
+@implementation RefactoratorPlugin {
     Class IDEWorkspaceWindowControllerClass;
     NSWindowController *lastWindowController;
     NSTask *refactorTask;
 
     NSConnection *doConnection;
-    id<SwifactorRequest> refactord;
+    id<RefactoratorRequest> refactord;
 
     IBOutlet NSPanel *panel;
     IBOutlet NSTextField *oldValueField, *usrField, *newValueField;
@@ -56,7 +56,7 @@ static SwifactorPlugin *swifactorPlugin;
 
 - (oneway void)error:(NSString *)message {
     dispatch_async( dispatch_get_main_queue(), ^{
-        [[NSAlert alertWithMessageText:@"Swifactor Error" defaultButton:@"OK" alternateButton:nil otherButton:nil
+        [[NSAlert alertWithMessageText:@"Refactorator Error" defaultButton:@"OK" alternateButton:nil otherButton:nil
              informativeTextWithFormat:@"%@", message] runModal];
     } );
 }
@@ -64,11 +64,11 @@ static SwifactorPlugin *swifactorPlugin;
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
 
     if ( ![[NSBundle bundleForClass:[self class]] loadNibNamed:[self className] owner:self topLevelObjects:NULL] ) {
-        if ( [[NSAlert alertWithMessageText:@"Swifactor Plugin:"
+        if ( [[NSAlert alertWithMessageText:@"Refactorator Plugin:"
                               defaultButton:@"OK" alternateButton:@"Goto GitHub" otherButton:nil
                   informativeTextWithFormat:@"Could not load interface nib. This was a problem using Alcatraz with Xcode6. Please download and build from the sources on GitHub."]
               runModal] == NSAlertAlternateReturn )
-            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/johnno1962/Swifactor"]];
+            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/johnno1962/Refactorator"]];
         return;
     }
 
@@ -131,19 +131,19 @@ static SwifactorPlugin *swifactorPlugin;
     refactorTask.currentDirectoryPath = @"/tmp";
     [refactorTask launch];
 
-    while ( !(doConnection = [NSConnection connectionWithRegisteredName:@SWIFACTOR_SERVICE
+    while ( !(doConnection = [NSConnection connectionWithRegisteredName:@REFACTORATOR_SERVICE
                                                                    host:nil]) )
            [NSThread sleepForTimeInterval:.1];
 
-    refactord = (id<SwifactorRequest>)[doConnection rootProxy];
-    [(id)refactord setProtocolForProxy:@protocol(SwifactorRequest)];
+    refactord = (id<RefactoratorRequest>)[doConnection rootProxy];
+    [(id)refactord setProtocolForProxy:@protocol(RefactoratorRequest)];
 
     int offset = [[textView.string substringWithRange:NSMakeRange( 0, range.location )]
                   lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
     dispatch_async( dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [self try:^{
-            NSLog( @"Swifactoring: %@ %d %@", refactord, offset, [self logDirectory] );
+            NSLog( @"Refactoratoring: %@ %d %@", refactord, offset, [self logDirectory] );
             int refs = [refactord refactorFile:self.currentFile byteOffset:offset
                                          oldValue:oldValueField.stringValue
                                            logDir:[self logDirectory] plugin:self];
@@ -161,6 +161,7 @@ static SwifactorPlugin *swifactorPlugin;
     dispatch_async( dispatch_get_main_queue(), ^{
         usrField.stringValue = usr;
         [panel makeKeyAndOrderFront:self];
+        [newValueField selectText:self];
     } );
 }
 
@@ -198,7 +199,8 @@ static SwifactorPlugin *swifactorPlugin;
         block();
     }
     @catch ( NSException *e ) {
-        [self error:[NSString stringWithFormat:@"Exception communicating with daemon: %@", e]];
+        if ( refactorTask )
+            [self error:[NSString stringWithFormat:@"Exception communicating with daemon: %@", e]];
     }
 }
 
@@ -273,7 +275,7 @@ static SwifactorPlugin *swifactorPlugin;
 
 @end
 
-@implementation NSTextView(Swifactor)
+@implementation NSTextView(Refactorator)
 
 - (NSMenu *)rf_menuForEvent:(NSEvent *)event {
     NSMenu *contextMenu = [self rf_menuForEvent:event];

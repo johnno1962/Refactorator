@@ -5,25 +5,25 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Swifactor/refactord/LogParser.swift#1 $
+//  $Id: //depot/Refactorator/refactord/LogParser.swift#15 $
 //
-//  Repo: https://github.com/johnno1962/Swifactor
+//  Repo: https://github.com/johnno1962/Refactorator
 //
 
 import Foundation
 
 class LogParser {
 
-    private let logs: [String]
+    private let recentFirstLogs: [String]
 
     init( logDir: String ) {
-        logs = LineGenerator( command: "ls -t \"\(logDir)\"/*.xcactivitylog", eol: "\n" ).sequence().map { $0 }
+        recentFirstLogs = LineGenerator( command: "ls -t \"\(logDir)\"/*.xcactivitylog" ).sequence.map { $0 }
     }
 
-    func argumentsMatching( matcher: ( line: String ) -> Bool ) -> [String]? {
+    func compilerArgumentsMatching( matcher: ( line: String ) -> Bool ) -> [String]? {
 
-        for log in logs {
-            for line in LineGenerator( command: "gunzip <\"\(log)\"", eol:"\r" ).sequence() {
+        for gzippedBuildLog in recentFirstLogs {
+            for line in LineGenerator( command: "gunzip <\"\(gzippedBuildLog)\"", lineSeparator: "\r" ).sequence {
                 if matcher( line: line ) {
                     let spaceToTheLeftOfAnOddNumberOfQoutes = " (?=[^\"]*\"(([^\"]*\"){2})*[^\"]* -o )"
                     var line = line.stringByReplacingOccurrencesOfString( spaceToTheLeftOfAnOddNumberOfQoutes,
@@ -38,17 +38,15 @@ class LogParser {
         return nil
     }
 
-    private func cleanup( args: [String] ) -> [String] {
+    private func cleanup( argv: [String] ) -> [String] {
         var out = [String]()
 
-        var i = 3
-        while i < args.count {
-            if args[i] == "-o" {
+        for i in 3..<argv.count {
+            if argv[i] == "-o" {
                 break
             }
 
-            out.append( args[i] )
-            i += 1
+            out.append( argv[i] )
         }
 
         return out

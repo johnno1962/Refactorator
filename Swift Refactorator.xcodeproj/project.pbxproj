@@ -9,15 +9,15 @@
 /* Begin PBXBuildFile section */
 		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
 		BB1D769E1C28612500F75914 /* ByteRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1D769C1C28610300F75914 /* ByteRegex.swift */; };
-		BB50F7581C2559F800E6C923 /* SwifactorPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7561C2559F800E6C923 /* SwifactorPlugin.m */; };
-		BB50F7591C2559F800E6C923 /* SwifactorPlugin.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB50F7571C2559F800E6C923 /* SwifactorPlugin.xib */; };
 		BB50F75B1C255ABE00E6C923 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB50F75A1C255ABE00E6C923 /* WebKit.framework */; };
 		BB50F7C41C25CA7E00E6C923 /* refactord in Resources */ = {isa = PBXBuildFile; fileRef = BB50F7BC1C25CA3400E6C923 /* refactord */; };
 		BB50F7C51C25CAAC00E6C923 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7A61C25C99A00E6C923 /* main.m */; };
-		BB50F7C61C25CAAC00E6C923 /* Swifactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7A71C25C99A00E6C923 /* Swifactor.swift */; };
 		BB50F7C71C25CAAC00E6C923 /* LogParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7A51C25C99A00E6C923 /* LogParser.swift */; };
 		BB50F7C81C25CAAC00E6C923 /* LineGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB50F7A41C25C99A00E6C923 /* LineGenerator.swift */; };
 		BB50F7CA1C25CB0200E6C923 /* sourcekitd.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB50F7C91C25CB0200E6C923 /* sourcekitd.framework */; };
+		BB5509701C3065E000A2EC44 /* RefactoratorPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = BB55096E1C3065E000A2EC44 /* RefactoratorPlugin.m */; };
+		BB5509711C3065E000A2EC44 /* RefactoratorPlugin.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB55096F1C3065E000A2EC44 /* RefactoratorPlugin.xib */; };
+		BB5509721C3066E100A2EC44 /* Refactorator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55096B1C3065D100A2EC44 /* Refactorator.swift */; };
 		BB82F0CD1913D15F0015AE7A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = BB82F0CC1913D15F0015AE7A /* README.md */; };
 		BBBD4F591A4AF4FA009969E1 /* log.html in Resources */ = {isa = PBXBuildFile; fileRef = BBBD4F571A4AF4FA009969E1 /* log.html */; };
 		DA1B5D020E64686800921439 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 089C1672FE841209C02AAC07 /* Foundation.framework */; };
@@ -48,21 +48,21 @@
 /* Begin PBXFileReference section */
 		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
-		8D5B49B6048680CD000E48DA /* Swifactor.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Swifactor.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D5B49B6048680CD000E48DA /* Refactorator.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Refactorator.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BB1D769C1C28610300F75914 /* ByteRegex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ByteRegex.swift; path = refactord/ByteRegex.swift; sourceTree = "<group>"; };
-		BB50F7551C2559F800E6C923 /* SwifactorPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwifactorPlugin.h; sourceTree = "<group>"; };
-		BB50F7561C2559F800E6C923 /* SwifactorPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SwifactorPlugin.m; sourceTree = "<group>"; };
-		BB50F7571C2559F800E6C923 /* SwifactorPlugin.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SwifactorPlugin.xib; sourceTree = "<group>"; };
 		BB50F75A1C255ABE00E6C923 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		BB50F7A41C25C99A00E6C923 /* LineGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LineGenerator.swift; path = refactord/LineGenerator.swift; sourceTree = "<group>"; };
 		BB50F7A51C25C99A00E6C923 /* LogParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LogParser.swift; path = refactord/LogParser.swift; sourceTree = "<group>"; };
 		BB50F7A61C25C99A00E6C923 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = refactord/main.m; sourceTree = "<group>"; };
-		BB50F7A71C25C99A00E6C923 /* Swifactor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Swifactor.swift; path = refactord/Swifactor.swift; sourceTree = "<group>"; };
 		BB50F7A81C25C99A00E6C923 /* refactord-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "refactord-Bridging-Header.h"; path = "refactord/refactord-Bridging-Header.h"; sourceTree = "<group>"; };
 		BB50F7A91C25C99A00E6C923 /* sourcekitd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sourcekitd.h; path = refactord/sourcekitd.h; sourceTree = "<group>"; };
 		BB50F7BC1C25CA3400E6C923 /* refactord */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = refactord; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB50F7C91C25CB0200E6C923 /* sourcekitd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = sourcekitd.framework; path = Toolchains/XcodeDefault.xctoolchain/usr/lib/sourcekitd.framework; sourceTree = DEVELOPER_DIR; };
+		BB55096B1C3065D100A2EC44 /* Refactorator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Refactorator.swift; path = refactord/Refactorator.swift; sourceTree = "<group>"; };
+		BB55096D1C3065E000A2EC44 /* RefactoratorPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RefactoratorPlugin.h; sourceTree = "<group>"; };
+		BB55096E1C3065E000A2EC44 /* RefactoratorPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RefactoratorPlugin.m; sourceTree = "<group>"; };
+		BB55096F1C3065E000A2EC44 /* RefactoratorPlugin.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RefactoratorPlugin.xib; sourceTree = "<group>"; };
 		BB82F0CC1913D15F0015AE7A /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		BBBD4F571A4AF4FA009969E1 /* log.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = log.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -124,7 +124,7 @@
 		19C28FB8FE9D52D311CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D5B49B6048680CD000E48DA /* Swifactor.xcplugin */,
+				8D5B49B6048680CD000E48DA /* Refactorator.xcplugin */,
 				BB50F7BC1C25CA3400E6C923 /* refactord */,
 			);
 			name = Products;
@@ -133,9 +133,9 @@
 		7F411B0C15FABAC6002F77B6 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				BB50F7551C2559F800E6C923 /* SwifactorPlugin.h */,
-				BB50F7561C2559F800E6C923 /* SwifactorPlugin.m */,
-				BB50F7571C2559F800E6C923 /* SwifactorPlugin.xib */,
+				BB55096D1C3065E000A2EC44 /* RefactoratorPlugin.h */,
+				BB55096E1C3065E000A2EC44 /* RefactoratorPlugin.m */,
+				BB55096F1C3065E000A2EC44 /* RefactoratorPlugin.xib */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -145,7 +145,7 @@
 			children = (
 				BB50F7A61C25C99A00E6C923 /* main.m */,
 				BB50F7A81C25C99A00E6C923 /* refactord-Bridging-Header.h */,
-				BB50F7A71C25C99A00E6C923 /* Swifactor.swift */,
+				BB55096B1C3065D100A2EC44 /* Refactorator.swift */,
 				BB50F7A51C25C99A00E6C923 /* LogParser.swift */,
 				BB50F7A41C25C99A00E6C923 /* LineGenerator.swift */,
 				BB1D769C1C28610300F75914 /* ByteRegex.swift */,
@@ -158,23 +158,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D5B49AC048680CD000E48DA /* Swifactor */ = {
+		8D5B49AC048680CD000E48DA /* Refactorator */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "Swifactor" */;
+			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "Refactorator" */;
 			buildPhases = (
 				8D5B49B1048680CD000E48DA /* Sources */,
 				8D5B49B3048680CD000E48DA /* Frameworks */,
 				BB5251F8160A2EF700276EB3 /* Resources */,
+				BBE9F6551C30683D00D6CEB1 /* ShellScript */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				BB50F7C31C25CA7800E6C923 /* PBXTargetDependency */,
 			);
-			name = Swifactor;
+			name = Refactorator;
 			productInstallPath = "$(HOME)/Library/Bundles";
 			productName = QuietXcode;
-			productReference = 8D5B49B6048680CD000E48DA /* Swifactor.xcplugin */;
+			productReference = 8D5B49B6048680CD000E48DA /* Refactorator.xcplugin */;
 			productType = "com.apple.product-type.bundle";
 		};
 		BB50F7BB1C25CA3400E6C923 /* refactord */ = {
@@ -208,7 +209,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "Swift Swifactor" */;
+			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "Swift Refactorator" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -223,7 +224,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8D5B49AC048680CD000E48DA /* Swifactor */,
+				8D5B49AC048680CD000E48DA /* Refactorator */,
 				BB50F7BB1C25CA3400E6C923 /* refactord */,
 			);
 		};
@@ -234,21 +235,38 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB50F7591C2559F800E6C923 /* SwifactorPlugin.xib in Resources */,
 				BB82F0CD1913D15F0015AE7A /* README.md in Resources */,
 				BBBD4F591A4AF4FA009969E1 /* log.html in Resources */,
+				BB5509711C3065E000A2EC44 /* RefactoratorPlugin.xib in Resources */,
 				BB50F7C41C25CA7E00E6C923 /* refactord in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		BBE9F6551C30683D00D6CEB1 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "rm -rf ~/Library/Application\\ Support/Developer/Shared/Xcode/Plug-ins/Swifactor.xcplugin";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		8D5B49B1048680CD000E48DA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB50F7581C2559F800E6C923 /* SwifactorPlugin.m in Sources */,
+				BB5509701C3065E000A2EC44 /* RefactoratorPlugin.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,7 +275,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB50F7C51C25CAAC00E6C923 /* main.m in Sources */,
-				BB50F7C61C25CAAC00E6C923 /* Swifactor.swift in Sources */,
+				BB5509721C3066E100A2EC44 /* Refactorator.swift in Sources */,
 				BB50F7C71C25CAAC00E6C923 /* LogParser.swift in Sources */,
 				BB50F7C81C25CAAC00E6C923 /* LineGenerator.swift in Sources */,
 				BB1D769E1C28612500F75914 /* ByteRegex.swift in Sources */,
@@ -301,10 +319,10 @@
 					"$(PROJECT_DIR)",
 				);
 				OTHER_CFLAGS = "-Weverything";
-				PRODUCT_BUNDLE_IDENTIFIER = com.johnholdsworth.Swifactor;
+				PRODUCT_BUNDLE_IDENTIFIER = com.johnholdsworth.Refactorator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_INSTALLED_PRODUCT = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "Swifactor-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Refactorator-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				WRAPPER_EXTENSION = xcplugin;
 			};
@@ -375,7 +393,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "Swifactor" */ = {
+		1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "Refactorator" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB913B08733D840010E9CD /* Debug */,
@@ -383,7 +401,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "Swift Swifactor" */ = {
+		1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "Swift Refactorator" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB913F08733D840010E9CD /* Debug */,

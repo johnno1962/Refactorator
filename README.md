@@ -1,30 +1,31 @@
-# Swifactor Xcode Plugin
+# Refactorator Xcode Plugin
 
-Swifactor is an Xcode plugin for refactoring Swift code. It will rename 
+Refactorator is an Xcode plugin for refactoring Swift code. It will rename 
 public or internal vars, functions, enums etc. For private and local entities
 use Xcode's existing "Edit All in Scope" functionality. It uses 
 [SourceKit](http://www.jpsim.com/uncovering-sourcekit/), an XPC service
 distributed with Xcode to parse your project's Swift sources to find symbol
-references.
+references. 
 
-Where a symbol is defined in a framework Swifactor will now also parse
+Where a symbol is defined in a framework Refactorator will now parse
 across targets to the framework if you start in the referring module.
+Similarly for overrides, start by selecting the overriding method.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/refactor.png)
 
-To use, download the source for the project and build to install the plugin
-then restart Xcode. Select a symbol and use "Right-click/Refactor/Swift !"
-to list the places in your code that declare and refer to that symbol.
+To use, download the source for this project and build to install the plugin
+then restart Xcode. Not used a Plugin before? Use [Alcatraz Package Manager](http://alcatraz.io/)
+to install it. Select a symbol in a Swift source and use "Right-click/Refactor/Swift !"
+to list places in the target that declare or refer to that symbol.
 Enter a new value for the identifier in the bottom textfield and press
 the "Preview" button to view the changes that would be made.
 Press the "Save" button to save these changes to disk.
 
-Swifactor was originally suggested as being feasible by @Daniel1of1 shortly after
+Refactorator was originally suggested as being feasible by @Daniel1of1 shortly after
 Swift came out building on the work by @jpsim on [SourceKitten](https://github.com/jpsim/SourceKitten).
-The final piece of the puzzle was the Open Sourcing of the SourceKit API by Apple as a part of Swift.
+The last piece of the puzzle was the Open Sourcing of the SourceKit API by Apple as a part of Swift.
 Source files are parsed using the same XPC calls that Xcode uses when it indexes
-a project. It is implemented as a daemon process so as not to affect the stability of Xcode.
-Final thanks to @orta for rescuing the project from it's original name Refactorator!
+a project and implemented in a daemon process so as not to affect the stability of Xcode.
 
 ### MIT License
 

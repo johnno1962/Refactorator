@@ -5,9 +5,9 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Swifactor/refactord/LineGenerator.swift#1 $
+//  $Id: //depot/Refactorator/refactord/LineGenerator.swift#7 $
 //
-//  Repo: https://github.com/johnno1962/Swifactor
+//  Repo: https://github.com/johnno1962/Refactorator
 //
 
 import Foundation
@@ -19,12 +19,12 @@ class LineGenerator: GeneratorType {
     let stdout: NSFileHandle
     let readBuffer = NSMutableData()
 
-    init( command: String, eol: String ) {
-        self.eol = Int32(eol.utf16.first!)
+    init( command: String, lineSeparator: String = "\n" ) {
+        self.eol = Int32(lineSeparator.utf16.first!)
 
         task.launchPath = "/bin/bash"
-        task.currentDirectoryPath = "/tmp"
         task.arguments = ["-c", "exec \(command)"]
+        task.currentDirectoryPath = "/tmp"
 
         let pipe = NSPipe()
         task.standardOutput = pipe.fileHandleForWriting
@@ -42,7 +42,7 @@ class LineGenerator: GeneratorType {
 
                 let line = String.fromCString( UnsafePointer<Int8>(readBuffer.bytes) )?
                     .stringByTrimmingCharactersInSet( NSCharacterSet.whitespaceAndNewlineCharacterSet() )
-                let consumed = NSMakeRange( 0, UnsafePointer<Void>(endOfLine)+1-readBuffer.bytes )
+                let consumed = NSMakeRange( 0, UnsafePointer<Void>(endOfLine) + 1 - readBuffer.bytes )
                 readBuffer.replaceBytesInRange( consumed, withBytes:nil, length:0 )
                 return line
             }
@@ -57,7 +57,7 @@ class LineGenerator: GeneratorType {
         return nil
     }
 
-    func sequence() -> AnySequence<String> {
+    var sequence: AnySequence<String> {
         return AnySequence({self})
     }
 

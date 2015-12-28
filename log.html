@@ -1,4 +1,4 @@
-<html><header><title>Swift Refactoring</title><style>
+<html><header><title>Swift Refactorator</title><style>
 
 body, table { font: 9pt Arial; margin: 0px; border: 3px inset lightgrey; }
 div { white-space: nowrap; }
@@ -8,7 +8,7 @@ a:link { color: black; }
 </style><script>
 
 function $(id) {
-    return id ? document.getElementById(id) : $('log');
+    return id ? document.getElementById(id) : $('log')
 }
 
 function append( html ) {
@@ -17,7 +17,8 @@ function append( html ) {
 }
 
 function showPatch( file, name, line, col, text ) {
-    append( "<div><span><a class=link href='"+file+"___"+line+"' title='line="+line+", col="+col+"'>"+name+"</a>:"+line+"</span>&nbsp;"+text.replace(/ /g, "&nbsp;")+"</div>" )
+    append( "<div><span><a class=link href='"+file+"___"+line+"' title='line="+line+", col="+col+"'>"+
+           name+"</a>:"+line+"</span>&nbsp;"+text.replace( /  /g, " &nbsp;" )+"</div>" )
 }
 
 </script></header>

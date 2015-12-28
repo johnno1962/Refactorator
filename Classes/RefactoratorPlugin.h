@@ -1,20 +1,20 @@
 //
-//  SwifactorPlugin.h
-//  Swifactor
+//  RefactoratorPlugin.h
+//  Refactorator
 //
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Swifactor/Classes/SwifactorPlugin.h#1 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.h#12 $
 //
-//  Repo: https://github.com/johnno1962/Swifactor
+//  Repo: https://github.com/johnno1962/Refactorator
 //
 
 @import Foundation;
 
-#define SWIFACTOR_SERVICE "service.swifactor"
+#define REFACTORATOR_SERVICE "service.refactorator"
 
-@protocol SwifactorResponse
+@protocol RefactoratorResponse
 
 - (oneway void)error:(NSString * _Nonnull)msg;
 - (oneway void)foundUSR:(NSString * _Nonnull)usr;
@@ -23,15 +23,15 @@
 
 @end
 
-@protocol SwifactorRequest
+@protocol RefactoratorRequest
 
 - (int)refactorFile:(NSString * _Nonnull)filePath byteOffset:(int)offset oldValue:(NSString * _Nonnull)old
-             logDir:(NSString * _Nonnull)logDir plugin:(id<SwifactorResponse> _Nonnull)plugin;
+             logDir:(NSString * _Nonnull)logDir plugin:(id<RefactoratorResponse> _Nonnull)plugin;
 - (int)refactorFrom:(NSString * _Nonnull)oldValue to:(NSString * _Nonnull)newValue;
 - (int)confirmRefactor;
 
 @end
 
-@interface SwifactorPlugin : NSObject <SwifactorResponse>
+@interface RefactoratorPlugin : NSObject <RefactoratorResponse>
 
 @end
