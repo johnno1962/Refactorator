@@ -12,13 +12,15 @@ function $(id) {
 }
 
 function append( html ) {
-    $().innerHTML += html
+    var div = document.createElement("div")
+    div.innerHTML = html
+    $().appendChild(div);
     scrollTo(0,1000000)
 }
 
 function showPatch( file, name, line, col, text ) {
-    append( "<div><span><a class=link href='"+file+"___"+line+"' title='line="+line+", col="+col+"'>"+
-           name+"</a>:"+line+"</span>&nbsp;"+text.replace( /  /g, " &nbsp;" )+"</div>" )
+    append( "<span><a class=link href='"+file+"___"+line+"' title='line="+line+", col="+col+"'>"+
+           name+"</a>:"+line+"</span>&nbsp;"+text.replace( /  /g, " &nbsp;" ) )
 }
 
 </script></header>
