@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#23 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#26 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -62,7 +62,12 @@ private struct Entity {
             pattern += "(?:[^\n]*\n){100}"
             line -= 100
         }
-        pattern += "(?:[^\n]*\n){\(line-1)}(.{\(col-1)}[^\n]*?)(\(text))([^\n]*)"
+        var col = self.col, colextra = ""
+        while col > 100 {
+            colextra += ".{100}"
+            col -= 100
+        }
+        pattern += "(?:[^\n]*\n){\(line-1)}(\(colextra).{\(col-1)}[^\n]*?)(\(text))([^\n]*)"
         return ByteRegex( pattern: pattern )
     }
 
@@ -87,8 +92,10 @@ var xcode: RefactoratorResponse!
 
     private var usrToPatch: String!
     private var overrideUSR: String?
-    private var modules = Set<String>()
 
+    private var indexes = [String:(__darwin_time_t,sourcekitd_response_t)]()
+
+    private var modules = Set<String>()
     private var patches = [Entity]()
     private var patched = [String:NSMutableData]()
 
@@ -106,7 +113,10 @@ var xcode: RefactoratorResponse!
         }
 
         sourcekitd_initialize()
+        modules.removeAll()
         patches.removeAll()
+        overrideUSR = nil
+        usrToPatch = nil
 
         /** prepare request to find entity at current selection */
         let req = sourcekitd_request_dictionary_create( nil, nil, 0 )
@@ -157,7 +167,7 @@ var xcode: RefactoratorResponse!
         }
 
         for module in modules {
-            xcode.log( "<br><b>Framework '\(module)':</b><br>" )
+            xcode.log( "<b>Framework '\(module)':</b><br>" )
 
             if let argv = xcodeBuildLogs.compilerArgumentsMatching( { line in
                 line.containsString( " -module-name \(module) " ) && line.containsString( " -primary-file " ) } ) {
@@ -165,6 +175,7 @@ var xcode: RefactoratorResponse!
             }
         }
 
+        xcode.indexing( nil )
         return Int32(patches.count)
     }
 
@@ -173,26 +184,39 @@ var xcode: RefactoratorResponse!
         let compilerArgs = args( argv )
 
         for file in argv.filter( { $0.hasSuffix( ".swift" ) } ) {
-            let req = sourcekitd_request_dictionary_create( nil, nil, 0 )
 
-            sourcekitd_request_dictionary_set_uid( req, requestID, indexRequestID )
-            sourcekitd_request_dictionary_set_string( req, sourceFileID, file )
-            sourcekitd_request_dictionary_set_value( req, compilerArgsID, compilerArgs )
+            var resp: sourcekitd_response_t
+            var info = stat()
+            stat( file, &info )
 
-            if isTTY {
-                sourcekitd_request_description_dump( req )
+            if let (when,lastResp) = indexes[file] where when >= info.st_mtimespec.tv_sec {
+                resp = lastResp
             }
-            
-            let resp = sourcekitd_send_request_sync( req )
-            if sourcekitd_response_is_error( resp ) {
-                let error = String.fromCString( sourcekitd_response_error_get_description( resp ) )!
-                xcode.error( "Source index error for \(file): \(error)" )
-                sourcekitd_initialize()
-                continue
-            }
+            else {
+                xcode.indexing( file )
+                let req = sourcekitd_request_dictionary_create( nil, nil, 0 )
 
-            if isTTY {
-                sourcekitd_response_description_dump_filedesc( resp, STDERR_FILENO )
+                sourcekitd_request_dictionary_set_uid( req, requestID, indexRequestID )
+                sourcekitd_request_dictionary_set_string( req, sourceFileID, file )
+                sourcekitd_request_dictionary_set_value( req, compilerArgsID, compilerArgs )
+
+                if isTTY {
+                    sourcekitd_request_description_dump( req )
+                }
+                
+                resp = sourcekitd_send_request_sync( req )
+                if sourcekitd_response_is_error( resp ) {
+                    let error = String.fromCString( sourcekitd_response_error_get_description( resp ) )!
+                    xcode.error( "Source index error for \(file): \(error)" )
+                    sourcekitd_initialize()
+                    continue
+                }
+
+                if isTTY {
+                    sourcekitd_response_description_dump_filedesc( resp, STDERR_FILENO )
+                }
+
+                indexes[file] = (info.st_mtimespec.tv_sec, resp)
             }
 
             let dict = sourcekitd_response_get_value( resp )
@@ -226,27 +250,31 @@ var xcode: RefactoratorResponse!
 
         sourcekitd_variant_array_apply( entities ) { (_,dict) in
 
-            let entityUSR = String.fromCString( sourcekitd_variant_dictionary_get_string( dict, usrID ) )
+            let usrString = sourcekitd_variant_dictionary_get_string( dict, usrID )
+            if usrString != nil {
 
-            /** if entity == current selection's entity, log and store for patching later */
-            if entityUSR == self.usrToPatch || entityUSR == self.overrideUSR {
+                let entityUSR = String.fromCString( usrString )
 
-                let entity = Entity( file: file,
-                    line: Int32(sourcekitd_variant_dictionary_get_int64( dict, lineID )),
-                    col: Int32(sourcekitd_variant_dictionary_get_int64( dict, colID )) )
+                /** if entity == current selection's entity, log and store for patching later */
+                if entityUSR == self.usrToPatch || entityUSR == self.overrideUSR {
 
-                if isTTY {
-                    let kind = sourcekitd_variant_dictionary_get_uid( dict, kindID )
-                    print( "\(String.fromCString( sourcekitd_uid_get_string_ptr( kind) )!) " +
-                        "\(String.fromCString( sourcekitd_variant_dictionary_get_string( dict, nameID) )!) " +
-                        "\(entityUSR!) \(entity.line) \(entity.col)" )
-                }
+                    let entity = Entity( file: file,
+                        line: Int32(sourcekitd_variant_dictionary_get_int64( dict, lineID )),
+                        col: Int32(sourcekitd_variant_dictionary_get_int64( dict, colID )) )
 
-                if let contents = contents, patch = entity.patchText( contents, value: oldValue ) {
-                    xcode.willPatchFile( file, line:entity.line, col: entity.col, text: patch )
-                    self.patches.append( entity )
-                }
-           }
+                    if isTTY {
+                        let kind = sourcekitd_variant_dictionary_get_uid( dict, kindID )
+                        print( "\(String.fromCString( sourcekitd_uid_get_string_ptr( kind) )!) " +
+                            "\(String.fromCString( sourcekitd_variant_dictionary_get_string( dict, nameID) )!) " +
+                            "\(entityUSR!) \(entity.line) \(entity.col)" )
+                    }
+
+                    if let contents = contents, patch = entity.patchText( contents, value: oldValue ) {
+                        xcode.willPatchFile( file, line:entity.line, col: entity.col, text: patch )
+                        self.patches.append( entity )
+                    }
+               }
+            }
 
             self.traceEntities( dict, oldValue: oldValue, file: file, contents: contents )
             return true
@@ -296,8 +324,9 @@ var xcode: RefactoratorResponse!
                 xcode.error( "Could not save to file: \(file)" )
             }
         }
+        let modified = patched.count
         patched.removeAll()
-        return Int32(patched.count)
+        return Int32(modified)
     }
 
 }

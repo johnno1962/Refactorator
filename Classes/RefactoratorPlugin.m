@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#16 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#18 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -27,14 +27,17 @@ static RefactoratorPlugin *swifactorPlugin;
 @implementation RefactoratorPlugin {
     Class IDEWorkspaceWindowControllerClass;
     NSWindowController *lastWindowController;
+    NSTimeInterval lastRefactor;
     NSTask *refactorTask;
+    NSString *lastUSR;
+    BOOL daemonBusy;
 
     NSConnection *doConnection;
     id<RefactoratorRequest> refactord;
 
     IBOutlet NSPanel *panel;
     IBOutlet NSTextField *oldValueField, *usrField, *newValueField;
-    IBOutlet NSButton *performButton, *confirmButton;
+    IBOutlet NSButton *refineButton, *performButton, *confirmButton;
     IBOutlet WebView *webView;
 @public
     IBOutlet NSMenuItem *refactorItem;
@@ -47,9 +50,12 @@ static RefactoratorPlugin *swifactorPlugin;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             swifactorPlugin = [[self alloc] init];
-            [[NSNotificationCenter defaultCenter] addObserver:swifactorPlugin
-                                                     selector:@selector(applicationDidFinishLaunching:)
-                                                         name:NSApplicationDidFinishLaunchingNotification object:nil];
+            dispatch_async( dispatch_get_main_queue(), ^{
+                [swifactorPlugin applicationDidFinishLaunching:nil];
+            } );
+//            [[NSNotificationCenter defaultCenter] addObserver:swifactorPlugin
+//                                                     selector:@selector(applicationDidFinishLaunching:)
+//                                                         name:NSApplicationDidFinishLaunchingNotification object:nil];
         });
     }
 }
@@ -121,29 +127,37 @@ static RefactoratorPlugin *swifactorPlugin;
         oldValueField.stringValue = [textView.string substringWithRange:range];
 
     newValueField.stringValue = oldValueField.stringValue;
-    performButton.enabled = confirmButton.enabled = FALSE;
+    [newValueField selectText:self];
+    refineButton.enabled = performButton.enabled = confirmButton.enabled = FALSE;
     usrField.stringValue = @"";
 
-    [refactorTask terminate];
+    lastRefactor = [NSDate timeIntervalSinceReferenceDate];
 
-    refactorTask = [NSTask new];
-    refactorTask.launchPath = [[NSBundle bundleForClass:[self class]] pathForResource:@"refactord" ofType:nil];
-    refactorTask.currentDirectoryPath = @"/tmp";
-    [refactorTask launch];
+    if ( !refactorTask || daemonBusy ) {
+        [refactorTask terminate];
 
-    while ( !(doConnection = [NSConnection connectionWithRegisteredName:@REFACTORATOR_SERVICE
-                                                                   host:nil]) )
-           [NSThread sleepForTimeInterval:.1];
+        refactorTask = [NSTask new];
+        refactorTask.launchPath = [[NSBundle bundleForClass:[self class]] pathForResource:@"refactord" ofType:nil];
+        refactorTask.currentDirectoryPath = @"/tmp";
+        [refactorTask launch];
 
-    refactord = (id<RefactoratorRequest>)[doConnection rootProxy];
-    [(id)refactord setProtocolForProxy:@protocol(RefactoratorRequest)];
+        while ( !(doConnection = [NSConnection connectionWithRegisteredName:@REFACTORATOR_SERVICE
+                                                                       host:nil]) )
+            [NSThread sleepForTimeInterval:.1];
+
+        refactord = (id<RefactoratorRequest>)[doConnection rootProxy];
+        [(id)refactord setProtocolForProxy:@protocol(RefactoratorRequest)];
+
+        [self housekeepDaemon];
+    }
 
     int offset = [[textView.string substringWithRange:NSMakeRange( 0, range.location )]
                   lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
     dispatch_async( dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [self try:^{
-            NSLog( @"Refactoratoring: %@ %d %@", refactord, offset, [self logDirectory] );
+            NSLog( @"Refactorating: %@ %d %@", refactord, offset, [self logDirectory] );
+            daemonBusy = TRUE;
             int refs = [refactord refactorFile:self.currentFile byteOffset:offset
                                          oldValue:oldValueField.stringValue
                                            logDir:[self logDirectory] plugin:self];
@@ -151,17 +165,33 @@ static RefactoratorPlugin *swifactorPlugin;
                 NSString *html = @"<br><b>Indexing Complete. Symbol referenced in %d places. "
                     "<a href='http://injectionforxcode.johnholdsworth.com/swifactor.html'>usage</a><p>";
                 [webView.windowScriptObject callWebScriptMethod:@"append" withArguments:@[[NSString stringWithFormat:html, refs]]];
-                performButton.enabled = TRUE;
+                refineButton.enabled = performButton.enabled = TRUE;
+                daemonBusy = FALSE;
             } );
         }];
     } );
 }
 
+- (void)housekeepDaemon {
+    if ( [NSDate timeIntervalSinceReferenceDate] - lastRefactor > 12 * 60 * 60 ) {
+        [refactorTask terminate];
+        refactorTask = nil;
+    }
+    else
+        [self performSelector:@selector(housekeepDaemon) withObject:nil afterDelay:60.];
+}
+
 - (oneway void)foundUSR:(NSString *)usr {
     dispatch_async( dispatch_get_main_queue(), ^{
-        usrField.stringValue = usr;
+        usrField.stringValue = lastUSR = usr;
         [panel makeKeyAndOrderFront:self];
-        [newValueField selectText:self];
+    } );
+}
+
+- (oneway void)indexing:(NSString *)file {
+    dispatch_async( dispatch_get_main_queue(), ^{
+        usrField.stringValue = file ?
+        [NSString stringWithFormat:@"Indexing: %@...", file.lastPathComponent] : lastUSR;
     } );
 }
 
@@ -175,6 +205,10 @@ static RefactoratorPlugin *swifactorPlugin;
     dispatch_async( dispatch_get_main_queue(), ^{
         [webView.windowScriptObject callWebScriptMethod:@"append" withArguments:@[msg]];
     } );
+}
+
+- (IBAction)enableRefine:(id)sender {
+    refineButton.enabled = TRUE;
 }
 
 - (IBAction)performRefactor:(id)sender {
@@ -201,12 +235,16 @@ static RefactoratorPlugin *swifactorPlugin;
     @catch ( NSException *e ) {
         if ( refactorTask )
             [self error:[NSString stringWithFormat:@"Exception communicating with daemon: %@", e]];
+        [refactorTask terminate];
+        refactorTask = nil;
     }
 }
 
 - (void)windowWillClose:(NSWindow *)window {
-    [refactorTask terminate];
-    refactorTask = nil;
+    if ( daemonBusy ) {
+        [refactorTask terminate];
+        refactorTask = nil;
+    }
 }
 
 // MARK: WebView

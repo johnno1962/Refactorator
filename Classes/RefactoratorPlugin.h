@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.h#12 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.h#13 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -18,6 +18,7 @@
 
 - (oneway void)error:(NSString * _Nonnull)msg;
 - (oneway void)foundUSR:(NSString * _Nonnull)usr;
+- (oneway void)indexing:(NSString * _Nullable)file;
 - (oneway void)willPatchFile:(NSString * _Nonnull)file line:(int)line col:(int)col text:(NSString * _Nonnull)text;
 - (oneway void)log:(NSString * _Nonnull)msg;
 
