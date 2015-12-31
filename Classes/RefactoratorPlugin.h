@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.h#13 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.h#14 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -30,6 +30,7 @@
              logDir:(NSString * _Nonnull)logDir plugin:(id<RefactoratorResponse> _Nonnull)plugin;
 - (int)refactorFrom:(NSString * _Nonnull)oldValue to:(NSString * _Nonnull)newValue;
 - (int)confirmRefactor;
+- (int)revertRefactor;
 
 @end
 

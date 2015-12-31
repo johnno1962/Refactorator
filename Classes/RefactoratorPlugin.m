@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#18 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#21 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -37,7 +37,7 @@ static RefactoratorPlugin *swifactorPlugin;
 
     IBOutlet NSPanel *panel;
     IBOutlet NSTextField *oldValueField, *usrField, *newValueField;
-    IBOutlet NSButton *refineButton, *performButton, *confirmButton;
+    IBOutlet NSButton *refineButton, *performButton, *confirmButton, *revertButton;
     IBOutlet WebView *webView;
 @public
     IBOutlet NSMenuItem *refactorItem;
@@ -51,12 +51,14 @@ static RefactoratorPlugin *swifactorPlugin;
         dispatch_once(&onceToken, ^{
             swifactorPlugin = [[self alloc] init];
             dispatch_async( dispatch_get_main_queue(), ^{
-                [swifactorPlugin applicationDidFinishLaunching:nil];
-            } );
 //            [[NSNotificationCenter defaultCenter] addObserver:swifactorPlugin
 //                                                     selector:@selector(applicationDidFinishLaunching:)
 //                                                         name:NSApplicationDidFinishLaunchingNotification object:nil];
-        });
+                [swifactorPlugin applicationDidFinishLaunching:nil];
+                system( "kill `ps auxww | grep Refactorator.xcplugin/Contents/Resources/refactord | "
+                       " grep -v grep | awk '{ print $2 }'` 2>/dev/null &" );
+            } );
+        } );
     }
 }
 
@@ -215,15 +217,27 @@ static RefactoratorPlugin *swifactorPlugin;
     [self try:^{
         [refactord refactorFrom:oldValueField.stringValue to:newValueField.stringValue];
         confirmButton.enabled = TRUE;
+        revertButton.enabled = FALSE;
     }];
 }
 
 - (IBAction)confirmRefactor:(id)sender {
     [self try:^{
         confirmButton.enabled = FALSE;
+        revertButton.enabled = TRUE;
         int patched = [refactord confirmRefactor];
         NSString *s =  patched == 1 ? @"" : @"s";
         NSString *msg = [NSString stringWithFormat:@"<p><b>%d file%@ modified.</b><br>", patched, s];
+        [webView.windowScriptObject callWebScriptMethod:@"append" withArguments:@[msg]];
+    }];
+}
+
+- (IBAction)revertRefactor:(id)sender {
+    [self try:^{
+        revertButton.enabled = FALSE;
+        int patched = [refactord revertRefactor];
+        NSString *s =  patched == 1 ? @"" : @"s";
+        NSString *msg = [NSString stringWithFormat:@"<p><b>%d file%@ reverted.</b><br>", patched, s];
         [webView.windowScriptObject callWebScriptMethod:@"append" withArguments:@[msg]];
     }];
 }
@@ -258,6 +272,7 @@ static RefactoratorPlugin *swifactorPlugin;
     }
 
     [listener ignore];
+    //[panel miniaturize:self];
     NSArray *split = [request.URL.path componentsSeparatedByString:@"___"];
     [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:split[0]]];
 

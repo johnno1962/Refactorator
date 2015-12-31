@@ -7,11 +7,11 @@ use Xcode's existing "Edit All in Scope" functionality. It uses
 distributed with Xcode to parse your project's Swift sources to find symbol
 references. 
 
-Where a symbol is defined in a framework Refactorator will now parse
+Where a symbol is defined in a framework Refactorator will parses
 across targets to the framework if you start in the referring module.
 Similarly for overrides, start by selecting the overriding method.
 
-![Icon](http://injectionforxcode.johnholdsworth.com/refactor.png)
+![Icon](http://injectionforxcode.johnholdsworth.com/refactorator.png)
 
 To use, download the source for this project and build to install the plugin
 then restart Xcode. Not used a Plugin before? Use [Alcatraz Package Manager](http://alcatraz.io/)
@@ -19,7 +19,8 @@ to install it. Select a symbol in a Swift source and use "Right-click/Refactor/S
 to list places in the target that declare or refer to that symbol.
 Enter a new value for the identifier in the bottom textfield and press
 the "Preview" button to view the changes that would be made.
-Press the "Save" button to save these changes to disk.
+Press the "Save" button to save these changes to disk. Use the
+"Undo" button if you watn to revert the cahnges.
 
 Refactorator was originally suggested as being feasible by @Daniel1of1 shortly after
 Swift came out building on the work by @jpsim on [SourceKitten](https://github.com/jpsim/SourceKitten).

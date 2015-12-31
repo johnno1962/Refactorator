@@ -9,13 +9,14 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="RefactoratorPlugin">
             <connections>
-                <outlet property="confirmButton" destination="qIb-pd-f9l" id="nrK-o6-0ee"/>
+                <outlet property="confirmButton" destination="2SZ-Jk-VBY" id="nha-39-2Cc"/>
                 <outlet property="newValueField" destination="EjS-RD-XyX" id="9hD-ab-2GJ"/>
                 <outlet property="oldValueField" destination="0D9-Ck-LqG" id="oNQ-2I-7c6"/>
                 <outlet property="panel" destination="lk1-Qp-q67" id="Q39-bV-LhI"/>
                 <outlet property="performButton" destination="tQ8-VM-fSv" id="NH2-3d-Vyd"/>
                 <outlet property="refactorItem" destination="4mv-ck-HbT" id="MiG-2W-eQ6"/>
                 <outlet property="refineButton" destination="bVM-Jx-F0s" id="VfP-K7-dr6"/>
+                <outlet property="revertButton" destination="qIb-pd-f9l" id="3Zw-RS-ZP7"/>
                 <outlet property="usrField" destination="JKu-cr-lrv" id="FYf-o2-hLm"/>
                 <outlet property="webView" destination="4d3-do-FTr" id="Lx6-yQ-ud5"/>
             </connections>
@@ -27,6 +28,7 @@
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="139" y="81" width="491" height="407"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <value key="minSize" type="size" width="350" height="200"/>
             <view key="contentView" id="mUl-bO-9tT">
                 <rect key="frame" x="0.0" y="0.0" width="491" height="407"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -115,7 +117,7 @@
                                     </textFieldCell>
                                 </textField>
                                 <textField toolTip="New Name for Idenifier" verticalHuggingPriority="750" id="EjS-RD-XyX">
-                                    <rect key="frame" x="87" y="11" width="212" height="22"/>
+                                    <rect key="frame" x="87" y="11" width="169" height="22"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="keH-J1-CMZ">
                                         <font key="font" metaFont="system"/>
@@ -126,8 +128,30 @@
                                         <outlet property="nextKeyView" destination="tQ8-VM-fSv" id="UsZ-Au-GWI"/>
                                     </connections>
                                 </textField>
+                                <button toolTip="Revert refactoring" verticalHuggingPriority="750" id="qIb-pd-f9l">
+                                    <rect key="frame" x="395" y="4" width="73" height="32"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                    <buttonCell key="cell" type="push" title="Undo" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="yVh-rD-gFw">
+                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                    </buttonCell>
+                                    <connections>
+                                        <action selector="revertRefactor:" target="-2" id="GdE-ID-bpn"/>
+                                    </connections>
+                                </button>
+                                <button toolTip="Save Changes to Disk" verticalHuggingPriority="750" id="2SZ-Jk-VBY">
+                                    <rect key="frame" x="330" y="4" width="73" height="32"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                    <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="l0s-4d-CMK">
+                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                        <connections>
+                                            <action selector="confirmRefactor:" target="-2" id="RfW-pj-FLd"/>
+                                        </connections>
+                                    </buttonCell>
+                                </button>
                                 <button toolTip="Preview Idenifier Change" verticalHuggingPriority="750" id="tQ8-VM-fSv">
-                                    <rect key="frame" x="302" y="4" width="88" height="32"/>
+                                    <rect key="frame" x="258" y="4" width="79" height="32"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                     <buttonCell key="cell" type="push" title="Preview" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="neP-2E-oCV">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -136,17 +160,6 @@
                                     <connections>
                                         <action selector="performRefactor:" target="-2" id="07a-yH-OBC"/>
                                     </connections>
-                                </button>
-                                <button toolTip="Save Changes to Disk" verticalHuggingPriority="750" id="qIb-pd-f9l">
-                                    <rect key="frame" x="386" y="4" width="80" height="32"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                    <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="yVh-rD-gFw">
-                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
-                                        <connections>
-                                            <action selector="confirmRefactor:" target="-2" id="LxL-Db-zlu"/>
-                                        </connections>
-                                    </buttonCell>
                                 </button>
                             </subviews>
                         </view>

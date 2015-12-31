@@ -5,12 +5,14 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#26 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#28 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
 
 import Foundation
+
+private let isTTY = isatty( STDERR_FILENO ) != 0
 
 /** request types */
 private let requestID = sourcekitd_uid_get_from_cstr("key.request")
@@ -39,13 +41,12 @@ private let usrID = sourcekitd_uid_get_from_cstr("key.usr")
 /** kinds */
 private let clangID = sourcekitd_uid_get_from_cstr("source.lang.swift.import.module.clang")
 
-/** prepare compiler arguments for sourcekit */
-private func args( argv: [String] ) -> sourcekitd_object_t {
-    let objects = argv.map { sourcekitd_request_string_create( $0 ) }
-    return sourcekitd_request_array_create( objects, argv.count )
+private func error( resp: sourcekitd_response_t ) -> String? {
+    if sourcekitd_response_is_error( resp ) {
+        return String.fromCString( sourcekitd_response_error_get_description( resp ) )
+    }
+    return nil
 }
-
-private let isTTY = isatty( STDERR_FILENO ) != 0
 
 /** occurrence of a matching "Unified Symbol Resolution" */
 private struct Entity {
@@ -97,10 +98,19 @@ var xcode: RefactoratorResponse!
 
     private var modules = Set<String>()
     private var patches = [Entity]()
-    private var patched = [String:NSMutableData]()
+
+    private var backups = [String:NSData]()
+    private var patched = [String:NSData]()
 
     public func refactorFile( filePath: String, byteOffset: Int32, oldValue: String, logDir: String, plugin: RefactoratorResponse ) -> Int32 {
         NSLog( "refactord -- refactorFile: \(filePath) \(byteOffset) \(logDir)")
+
+        sourcekitd_initialize()
+        modules.removeAll()
+        patches.removeAll()
+        overrideUSR = nil
+        usrToPatch = nil
+
         xcode = plugin
 
         /** find command line arguments for file from build logs */
@@ -112,27 +122,28 @@ var xcode: RefactoratorResponse!
             return -1
         }
 
-        sourcekitd_initialize()
-        modules.removeAll()
-        patches.removeAll()
-        overrideUSR = nil
-        usrToPatch = nil
+        /** prepare compiler arguments for sourcekit */
+        func args( argv: [String] ) -> sourcekitd_object_t {
+            let objects = argv.map { sourcekitd_request_string_create( $0 ) }
+            return sourcekitd_request_array_create( objects, argv.count )
+        }
 
         /** prepare request to find entity at current selection */
         let req = sourcekitd_request_dictionary_create( nil, nil, 0 )
+        let compiplerArgs = args( argv )
 
         sourcekitd_request_dictionary_set_uid( req, requestID, cursorRequestID )
         sourcekitd_request_dictionary_set_string( req, sourceFileID, filePath )
         sourcekitd_request_dictionary_set_int64( req, offsetID, Int64(byteOffset) )
-        sourcekitd_request_dictionary_set_value( req, compilerArgsID, args( argv ) )
+        sourcekitd_request_dictionary_set_value( req, compilerArgsID, compiplerArgs )
 
         if isTTY {
             sourcekitd_request_description_dump( req )
         }
 
         let resp = sourcekitd_send_request_sync( req )
-        if sourcekitd_response_is_error( resp ) {
-            xcode.error( "Cursor fetch error: \(String.fromCString( sourcekitd_response_error_get_description( resp ) )!)" )
+        if let error = error( resp ) {
+            xcode.error( "Cursor fetch error: \(error)" )
             exit(1)
         }
 
@@ -158,7 +169,7 @@ var xcode: RefactoratorResponse!
         xcode.foundUSR( usrToPatch )
 
         /** index all sources included in selection's module */
-        processModuleSources( argv, oldValue: oldValue )
+        processModuleSources( argv, args: compiplerArgs, oldValue: oldValue )
 
         /** if entity is in a framework, index each source of that module as well */
         let module = sourcekitd_variant_dictionary_get_string( dict, moduleID )
@@ -171,7 +182,7 @@ var xcode: RefactoratorResponse!
 
             if let argv = xcodeBuildLogs.compilerArgumentsMatching( { line in
                 line.containsString( " -module-name \(module) " ) && line.containsString( " -primary-file " ) } ) {
-                    processModuleSources( argv, oldValue: oldValue )
+                    processModuleSources( argv, args: args( argv ), oldValue: oldValue )
             }
         }
 
@@ -179,17 +190,16 @@ var xcode: RefactoratorResponse!
         return Int32(patches.count)
     }
 
-    private func processModuleSources( argv: [String], oldValue: String ) {
-
-        let compilerArgs = args( argv )
+    private func processModuleSources( argv: [String], args: sourcekitd_object_t, oldValue: String ) {
 
         for file in argv.filter( { $0.hasSuffix( ".swift" ) } ) {
 
-            var resp: sourcekitd_response_t
+            let resp: sourcekitd_response_t
             var info = stat()
             stat( file, &info )
+            let modified = info.st_mtimespec.tv_sec
 
-            if let (when,lastResp) = indexes[file] where when >= info.st_mtimespec.tv_sec {
+            if let (indexTime,lastResp) = indexes[file] where indexTime >= modified {
                 resp = lastResp
             }
             else {
@@ -198,16 +208,15 @@ var xcode: RefactoratorResponse!
 
                 sourcekitd_request_dictionary_set_uid( req, requestID, indexRequestID )
                 sourcekitd_request_dictionary_set_string( req, sourceFileID, file )
-                sourcekitd_request_dictionary_set_value( req, compilerArgsID, compilerArgs )
+                sourcekitd_request_dictionary_set_value( req, compilerArgsID, args )
 
                 if isTTY {
                     sourcekitd_request_description_dump( req )
                 }
-                
+
                 resp = sourcekitd_send_request_sync( req )
-                if sourcekitd_response_is_error( resp ) {
-                    let error = String.fromCString( sourcekitd_response_error_get_description( resp ) )!
-                    xcode.error( "Source index error for \(file): \(error)" )
+                if let error = error( resp ) {
+                    xcode.log( "Source index error for \(file): \(error)" )
                     sourcekitd_initialize()
                     continue
                 }
@@ -216,7 +225,7 @@ var xcode: RefactoratorResponse!
                     sourcekitd_response_description_dump_filedesc( resp, STDERR_FILENO )
                 }
 
-                indexes[file] = (info.st_mtimespec.tv_sec, resp)
+                indexes[file] = (modified, resp)
             }
 
             let dict = sourcekitd_response_get_value( resp )
@@ -236,7 +245,10 @@ var xcode: RefactoratorResponse!
 
             if sourcekitd_variant_dictionary_get_uid( dict, kindID ) == clangID &&
                     !sourcekitd_variant_dictionary_get_bool( dict, isSystemID ) {
-                self.modules.insert( String.fromCString( sourcekitd_variant_dictionary_get_string( dict, nameID ) )! )
+                let module = sourcekitd_variant_dictionary_get_string( dict, nameID )
+                if module != nil {
+                    self.modules.insert( String.fromCString( module )! )
+                }
             }
 
             self.traceDependencies( dict )
@@ -283,6 +295,7 @@ var xcode: RefactoratorResponse!
 
     public func refactorFrom( oldValue: String, to newValue: String ) -> Int32 {
         NSLog( "refactorFrom( \(oldValue) to: \(newValue) )")
+        backups.removeAll()
         patched.removeAll()
 
         typealias Closure = () -> ()
@@ -291,7 +304,8 @@ var xcode: RefactoratorResponse!
         /** patches performed in reverse in case offsets changed */
         for entity in patches.reverse() {
             if patched[entity.file] == nil {
-                patched[entity.file] = NSMutableData( contentsOfFile: entity.file )!
+                backups[entity.file] = NSData( contentsOfFile: entity.file )
+                patched[entity.file] = backups[entity.file]
             }
 
             if let contents = patched[entity.file], matches = entity.regex( oldValue ).match( contents ) {
@@ -326,6 +340,17 @@ var xcode: RefactoratorResponse!
         }
         let modified = patched.count
         patched.removeAll()
+        return Int32(modified)
+    }
+
+    public func revertRefactor() -> Int32 {
+        for (file,data) in backups {
+            if !data.writeToFile( file, atomically: true ) {
+                xcode.error( "Could not revert file: \(file)" )
+            }
+        }
+        let modified = backups.count
+        backups.removeAll()
         return Int32(modified)
     }
 
