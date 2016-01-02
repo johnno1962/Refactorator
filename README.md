@@ -20,7 +20,7 @@ to list places in the target that declare or refer to that symbol.
 Enter a new value for the identifier in the bottom textfield and press
 the "Preview" button to view the changes that would be made.
 Press the "Save" button to save these changes to disk. Use the
-"Undo" button if you want to revert the cahnges.
+"Undo" button to revert the changes.
 
 Refactorator was originally suggested as being feasible by @Daniel1of1 shortly after
 Swift came out building on the work by @jpsim on [SourceKitten](https://github.com/jpsim/SourceKitten).
