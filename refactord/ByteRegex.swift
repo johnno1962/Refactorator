@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 20/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/ByteRegex.swift#7 $
+//  $Id: //depot/Refactorator/refactord/ByteRegex.swift#9 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -25,8 +25,8 @@ class ByteRegex {
     var regex = regex_t()
     let groups: Int
 
-    init( pattern: String ) {
-        let error = regcomp( &regex, pattern, REG_EXTENDED|REG_ENHANCED )
+    init( pattern: String, cflags: Int32 = REG_EXTENDED|REG_ENHANCED ) {
+        let error = regcomp( &regex, pattern, cflags )
         if error != 0 {
             var errbuff = [Int8]( count: 1024, repeatedValue: 0 )
             regerror( error, &regex, &errbuff, errbuff.count )

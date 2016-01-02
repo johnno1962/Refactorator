@@ -5,14 +5,14 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.h#14 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.h#15 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
 
 @import Foundation;
 
-#define REFACTORATOR_SERVICE "service.refactorator"
+#define REFACTORATOR_SERVICE @"service.refactorator"
 
 @protocol RefactoratorResponse
 

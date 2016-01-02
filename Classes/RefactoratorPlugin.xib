@@ -14,7 +14,6 @@
                 <outlet property="oldValueField" destination="0D9-Ck-LqG" id="oNQ-2I-7c6"/>
                 <outlet property="panel" destination="lk1-Qp-q67" id="Q39-bV-LhI"/>
                 <outlet property="performButton" destination="tQ8-VM-fSv" id="NH2-3d-Vyd"/>
-                <outlet property="refactorItem" destination="4mv-ck-HbT" id="MiG-2W-eQ6"/>
                 <outlet property="refineButton" destination="bVM-Jx-F0s" id="VfP-K7-dr6"/>
                 <outlet property="revertButton" destination="qIb-pd-f9l" id="3Zw-RS-ZP7"/>
                 <outlet property="usrField" destination="JKu-cr-lrv" id="FYf-o2-hLm"/>
@@ -173,11 +172,5 @@
             </connections>
             <point key="canvasLocation" x="307.5" y="334.5"/>
         </window>
-        <menuItem title="Swift !" id="4mv-ck-HbT">
-            <modifierMask key="keyEquivalentModifierMask"/>
-            <connections>
-                <action selector="startRefactor:" target="-2" id="5YT-Q4-nn8"/>
-            </connections>
-        </menuItem>
     </objects>
 </document>

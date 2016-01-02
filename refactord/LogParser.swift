@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/LogParser.swift#15 $
+//  $Id: //depot/Refactorator/refactord/LogParser.swift#16 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -17,18 +17,20 @@ class LogParser {
     private let recentFirstLogs: [String]
 
     init( logDir: String ) {
-        recentFirstLogs = LineGenerator( command: "ls -t \"\(logDir)\"/*.xcactivitylog" ).sequence.map { $0 }
+        recentFirstLogs = CommandGenerator( command: "ls -t \"\(logDir)\"/*.xcactivitylog" ).sequence.map { $0 }
     }
 
     func compilerArgumentsMatching( matcher: ( line: String ) -> Bool ) -> [String]? {
 
         for gzippedBuildLog in recentFirstLogs {
-            for line in LineGenerator( command: "gunzip <\"\(gzippedBuildLog)\"", lineSeparator: "\r" ).sequence {
+            for line in CommandGenerator( command: "gunzip <\"\(gzippedBuildLog)\"", lineSeparator: "\r" ).sequence {
                 if matcher( line: line ) {
                     let spaceToTheLeftOfAnOddNumberOfQoutes = " (?=[^\"]*\"(([^\"]*\"){2})*[^\"]* -o )"
-                    var line = line.stringByReplacingOccurrencesOfString( spaceToTheLeftOfAnOddNumberOfQoutes,
-                        withString: "___", options: .RegularExpressionSearch, range: nil )
-                    line = line.stringByReplacingOccurrencesOfString( "\"", withString: "" )
+                    let line = line
+                        .stringByTrimmingCharactersInSet( NSCharacterSet.whitespaceAndNewlineCharacterSet() )
+                        .stringByReplacingOccurrencesOfString( spaceToTheLeftOfAnOddNumberOfQoutes,
+                            withString: "___", options: .RegularExpressionSearch, range: nil )
+                        .stringByReplacingOccurrencesOfString( "\"", withString: "" )
                     return cleanup( line.componentsSeparatedByString( " " )
                         .map { $0.stringByReplacingOccurrencesOfString( "___", withString: " " ) } )
                 }

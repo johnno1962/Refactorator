@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#21 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#26 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -22,7 +22,7 @@
 @import WebKit;
 @import ObjectiveC.runtime;
 
-static RefactoratorPlugin *swifactorPlugin;
+static RefactoratorPlugin *refactoratorPlugin;
 
 @implementation RefactoratorPlugin {
     Class IDEWorkspaceWindowControllerClass;
@@ -40,7 +40,7 @@ static RefactoratorPlugin *swifactorPlugin;
     IBOutlet NSButton *refineButton, *performButton, *confirmButton, *revertButton;
     IBOutlet WebView *webView;
 @public
-    IBOutlet NSMenuItem *refactorItem;
+    NSMenuItem *refactorItem;
 }
 
 // MARK: Initialisation
@@ -49,12 +49,9 @@ static RefactoratorPlugin *swifactorPlugin;
     if ([[NSBundle mainBundle].infoDictionary[@"CFBundleName"] isEqual:@"Xcode"]) {
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
-            swifactorPlugin = [[self alloc] init];
+            refactoratorPlugin = [[self alloc] init];
             dispatch_async( dispatch_get_main_queue(), ^{
-//            [[NSNotificationCenter defaultCenter] addObserver:swifactorPlugin
-//                                                     selector:@selector(applicationDidFinishLaunching:)
-//                                                         name:NSApplicationDidFinishLaunchingNotification object:nil];
-                [swifactorPlugin applicationDidFinishLaunching:nil];
+                [refactoratorPlugin applicationDidFinishLaunching:nil];
                 system( "kill `ps auxww | grep Refactorator.xcplugin/Contents/Resources/refactord | "
                        " grep -v grep | awk '{ print $2 }'` 2>/dev/null &" );
             } );
@@ -71,17 +68,11 @@ static RefactoratorPlugin *swifactorPlugin;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
 
-    if ( ![[NSBundle bundleForClass:[self class]] loadNibNamed:[self className] owner:self topLevelObjects:NULL] ) {
-        if ( [[NSAlert alertWithMessageText:@"Refactorator Plugin:"
-                              defaultButton:@"OK" alternateButton:@"Goto GitHub" otherButton:nil
-                  informativeTextWithFormat:@"Could not load interface nib. This was a problem using Alcatraz with Xcode6. Please download and build from the sources on GitHub."]
-              runModal] == NSAlertAlternateReturn )
-            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/johnno1962/Refactorator"]];
-        return;
-    }
-
     NSMenu *editMenu = [[NSApp mainMenu] itemWithTitle:@"Edit"].submenu;
     NSMenu *refactorMenu = [editMenu itemWithTitle:@"Refactor"].submenu;
+    refactorItem = [[NSMenuItem alloc] initWithTitle:@"Swift !"
+                                              action:@selector(startRefactor:) keyEquivalent:@""];
+    refactorItem.target = refactoratorPlugin;
     [refactorMenu insertItem:refactorItem atIndex:0];
 
     [self swizzleClass:NSClassFromString(@"DVTSourceTextView")
@@ -119,6 +110,16 @@ static RefactoratorPlugin *swifactorPlugin;
 
 - (IBAction)startRefactor:(id)sender {
 
+    if ( !webView &&
+        ![[NSBundle bundleForClass:[self class]] loadNibNamed:[self className] owner:self topLevelObjects:NULL] ) {
+        if ( [[NSAlert alertWithMessageText:@"Refactorator Plugin:"
+                              defaultButton:@"OK" alternateButton:@"Goto GitHub" otherButton:nil
+                  informativeTextWithFormat:@"Could not load interface nib. This was a problem using Alcatraz with Xcode6. Please download and build from the sources on GitHub."]
+              runModal] == NSAlertAlternateReturn )
+            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/johnno1962/Refactorator"]];
+        return;
+    }
+
     NSURL *logURL = [[NSBundle bundleForClass:[self class]] URLForResource:@"log" withExtension:@"html"];
     [webView.mainFrame loadRequest:[NSURLRequest requestWithURL:logURL]];
 
@@ -135,23 +136,8 @@ static RefactoratorPlugin *swifactorPlugin;
 
     lastRefactor = [NSDate timeIntervalSinceReferenceDate];
 
-    if ( !refactorTask || daemonBusy ) {
-        [refactorTask terminate];
-
-        refactorTask = [NSTask new];
-        refactorTask.launchPath = [[NSBundle bundleForClass:[self class]] pathForResource:@"refactord" ofType:nil];
-        refactorTask.currentDirectoryPath = @"/tmp";
-        [refactorTask launch];
-
-        while ( !(doConnection = [NSConnection connectionWithRegisteredName:@REFACTORATOR_SERVICE
-                                                                       host:nil]) )
-            [NSThread sleepForTimeInterval:.1];
-
-        refactord = (id<RefactoratorRequest>)[doConnection rootProxy];
-        [(id)refactord setProtocolForProxy:@protocol(RefactoratorRequest)];
-
-        [self housekeepDaemon];
-    }
+    if ( !refactorTask || daemonBusy )
+        [self startDaemon];
 
     int offset = [[textView.string substringWithRange:NSMakeRange( 0, range.location )]
                   lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
@@ -165,22 +151,40 @@ static RefactoratorPlugin *swifactorPlugin;
                                            logDir:[self logDirectory] plugin:self];
             dispatch_async( dispatch_get_main_queue(), ^{
                 NSString *html = @"<br><b>Indexing Complete. Symbol referenced in %d places. "
-                    "<a href='http://injectionforxcode.johnholdsworth.com/swifactor.html'>usage</a><p>";
+                    "<a href='http://injectionforxcode.johnholdsworth.com/refactorator.html'>usage</a><p>";
                 [webView.windowScriptObject callWebScriptMethod:@"append" withArguments:@[[NSString stringWithFormat:html, refs]]];
-                refineButton.enabled = performButton.enabled = TRUE;
+                performButton.enabled = TRUE;
                 daemonBusy = FALSE;
             } );
         }];
     } );
 }
 
+- (void)startDaemon {
+    [refactorTask terminate];
+
+    refactorTask = [NSTask new];
+    refactorTask.launchPath = [[NSBundle bundleForClass:[self class]] pathForResource:@"refactord" ofType:nil];
+    refactorTask.currentDirectoryPath = @"/tmp";
+    [refactorTask launch];
+
+    while ( !(doConnection = [NSConnection connectionWithRegisteredName:REFACTORATOR_SERVICE
+                                                                   host:nil]) )
+        [NSThread sleepForTimeInterval:.1];
+
+    refactord = (id<RefactoratorRequest>)[doConnection rootProxy];
+    [(id)refactord setProtocolForProxy:@protocol(RefactoratorRequest)];
+
+    [self housekeepDaemon];
+}
+
 - (void)housekeepDaemon {
-    if ( [NSDate timeIntervalSinceReferenceDate] - lastRefactor > 12 * 60 * 60 ) {
+    if ( [NSDate timeIntervalSinceReferenceDate] - lastRefactor > 12. * 60. * 60. ) {
         [refactorTask terminate];
         refactorTask = nil;
     }
     else
-        [self performSelector:@selector(housekeepDaemon) withObject:nil afterDelay:60.];
+        [self performSelector:@selector(housekeepDaemon) withObject:nil afterDelay:60. * 60.];
 }
 
 - (oneway void)foundUSR:(NSString *)usr {
@@ -333,10 +337,10 @@ static RefactoratorPlugin *swifactorPlugin;
 - (NSMenu *)rf_menuForEvent:(NSEvent *)event {
     NSMenu *contextMenu = [self rf_menuForEvent:event];
     NSMenu *refactorMenu = [contextMenu itemWithTitle:@"Refactor"].submenu;
-    if ( swifactorPlugin && [refactorMenu indexOfItemWithTitle:swifactorPlugin->refactorItem.title] == -1 ) {
-        NSMenuItem *refactorItem = [[NSMenuItem alloc] initWithTitle:swifactorPlugin->refactorItem.title
+    if ( refactoratorPlugin && [refactorMenu indexOfItemWithTitle:refactoratorPlugin->refactorItem.title] == -1 ) {
+        NSMenuItem *refactorItem = [[NSMenuItem alloc] initWithTitle:refactoratorPlugin->refactorItem.title
                                                               action:@selector(startRefactor:) keyEquivalent:@""];
-        refactorItem.target = swifactorPlugin;
+        refactorItem.target = refactoratorPlugin;
         [refactorMenu insertItem:refactorItem atIndex:0];
     }
     return contextMenu;
