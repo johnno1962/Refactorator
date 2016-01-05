@@ -5,14 +5,14 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/SourceKit.swift#5 $
+//  $Id: //depot/Refactorator/refactord/SourceKit.swift#8 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
 
 import Foundation
 
-private let isTTY = isatty( STDERR_FILENO ) != 0
+let isTTY = isatty( STDERR_FILENO ) != 0
 
 class SourceKit {
 
@@ -42,6 +42,19 @@ class SourceKit {
 
     /** kinds */
     lazy var clangID = sourcekitd_uid_get_from_cstr("source.lang.swift.import.module.clang")
+
+    /** declarations */
+    lazy var structID = sourcekitd_uid_get_from_cstr("source.lang.swift.decl.struct")
+    lazy var classID = sourcekitd_uid_get_from_cstr("source.lang.swift.decl.class")
+    lazy var enumID = sourcekitd_uid_get_from_cstr("source.lang.swift.decl.enum")
+
+    /** references */
+    lazy var classVarID = sourcekitd_uid_get_from_cstr("source.lang.swift.ref.function.var.class")
+    lazy var classMethodID = sourcekitd_uid_get_from_cstr("source.lang.swift.ref.function.method.class")
+    lazy var initID = sourcekitd_uid_get_from_cstr("source.lang.swift.ref.function.constructor")
+    lazy var varID = sourcekitd_uid_get_from_cstr("source.lang.swift.ref.var.instance")
+    lazy var methodID = sourcekitd_uid_get_from_cstr("source.lang.swift.ref.function.method.instance")
+    lazy var elementID = sourcekitd_uid_get_from_cstr("source.lang.swift.ref.enumelement")
 
     init() {
         sourcekitd_initialize()
@@ -95,4 +108,65 @@ class SourceKit {
         return sendRequest( req )
     }
 
+    func recurseOver( childID: sourcekitd_uid_t, resp: sourcekitd_variant_t,
+            indent: String = "", visualiser: Visualiser? = nil,
+            block: ( dict: sourcekitd_variant_t ) -> ()) {
+
+        let children = sourcekitd_variant_dictionary_get_value( resp, childID )
+        if sourcekitd_variant_get_type( children ) == SOURCEKITD_VARIANT_TYPE_ARRAY {
+
+            visualiser?.enter()
+            sourcekitd_variant_array_apply( children ) { (_,dict) in
+
+                block( dict: dict )
+                visualiser?.present( dict, indent: indent )
+
+                self.recurseOver( childID, resp: dict, indent: indent+"  ", visualiser: visualiser, block: block )
+                return true
+            }
+            visualiser?.exit()
+        }
+    }
+
+}
+
+func disectUSR( usr: NSString ) -> [String]? {
+    guard usr.hasPrefix( "s:" ) else { return nil }
+
+    let digits = NSCharacterSet.decimalDigitCharacterSet()
+    let scanner = NSScanner( string: usr as String )
+    var out = [String]()
+    var wasZero = false
+
+    while !scanner.atEnd {
+
+        var name: NSString?
+        scanner.scanUpToCharactersFromSet( digits, intoString: &name )
+        if name != nil, let name = name as? String {
+            if wasZero {
+                out[out.count-1] += "0" + name
+                wasZero = false
+            }
+            else {
+                out.append( name )
+            }
+        }
+
+        var len = 0
+        scanner.scanInteger( &len )
+        wasZero = len == 0
+        if wasZero {
+            continue
+        }
+
+        if len > usr.length-scanner.scanLocation {
+            len = usr.length-scanner.scanLocation
+        }
+
+        let range = NSMakeRange( scanner.scanLocation, len )
+        out.append( usr.substringWithRange( range ) )
+        scanner.scanLocation += len
+    }
+
+    return out
 }

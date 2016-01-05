@@ -22,6 +22,13 @@ the "Preview" button to view the changes that would be made.
 Press the "Save" button to save these changes to disk. Use the
 "Undo" button to revert the changes.
 
+If you have (Graphviz)[http://www.graphviz.org/] installed you can view
+an approximate visualisation of classes and a cross-reference
+of your project using the "Edit/Refactor/Visualise !" menu item. Initialiser
+calls are colored green, ivar references blue, and method calls red.
+
+![Icon](http://injectionforxcode.johnholdsworth.com/visualiser.png)
+
 Refactorator was originally suggested as being feasible by @Daniel1of1 shortly after
 Swift came out building on the work by @jpsim on [SourceKitten](https://github.com/jpsim/SourceKitten).
 The last piece of the puzzle was the Open Sourcing of the SourceKit API by Apple as a part of Swift.

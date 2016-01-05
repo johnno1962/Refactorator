@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
+		BB02BB2B1C3AA9AE009B3BA0 /* Visualiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB02BB291C3AA99A009B3BA0 /* Visualiser.swift */; };
 		BB1D769E1C28612500F75914 /* ByteRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1D769C1C28610300F75914 /* ByteRegex.swift */; };
 		BB50F75B1C255ABE00E6C923 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB50F75A1C255ABE00E6C923 /* WebKit.framework */; };
 		BB50F7C41C25CA7E00E6C923 /* refactord in Resources */ = {isa = PBXBuildFile; fileRef = BB50F7BC1C25CA3400E6C923 /* refactord */; };
@@ -39,6 +40,7 @@
 		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		8D5B49B6048680CD000E48DA /* Refactorator.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Refactorator.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BB02BB291C3AA99A009B3BA0 /* Visualiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Visualiser.swift; path = refactord/Visualiser.swift; sourceTree = "<group>"; };
 		BB1D769C1C28610300F75914 /* ByteRegex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ByteRegex.swift; path = refactord/ByteRegex.swift; sourceTree = "<group>"; };
 		BB50F75A1C255ABE00E6C923 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		BB50F7A51C25C99A00E6C923 /* LogParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LogParser.swift; path = refactord/LogParser.swift; sourceTree = "<group>"; };
@@ -136,6 +138,7 @@
 				BB50F7A61C25C99A00E6C923 /* main.m */,
 				BB50F7A81C25C99A00E6C923 /* refactord-Bridging-Header.h */,
 				BB55096B1C3065D100A2EC44 /* Refactorator.swift */,
+				BB02BB291C3AA99A009B3BA0 /* Visualiser.swift */,
 				BB50F7A51C25C99A00E6C923 /* LogParser.swift */,
 				BBB802211C37EF56008A97D0 /* LineGenerators.swift */,
 				BB1D769C1C28610300F75914 /* ByteRegex.swift */,
@@ -264,10 +267,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BBB802231C37EF7A008A97D0 /* LineGenerators.swift in Sources */,
 				BB50F7C51C25CAAC00E6C923 /* main.m in Sources */,
 				BB5509721C3066E100A2EC44 /* Refactorator.swift in Sources */,
+				BB02BB2B1C3AA9AE009B3BA0 /* Visualiser.swift in Sources */,
 				BB50F7C71C25CAAC00E6C923 /* LogParser.swift in Sources */,
+				BBB802231C37EF7A008A97D0 /* LineGenerators.swift in Sources */,
 				BB1D769E1C28612500F75914 /* ByteRegex.swift in Sources */,
 				BBB247481C35E87300FB87C3 /* SourceKit.swift in Sources */,
 			);

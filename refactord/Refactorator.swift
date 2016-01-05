@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#42 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#46 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -13,7 +13,7 @@
 import Foundation
 
 /** occurrence of a matching "Unified Symbol Resolution" */
-private struct Entity {
+struct Entity {
 
     let file: String
     let line: Int32
@@ -32,17 +32,16 @@ private struct Entity {
             largecol += ".{100}"
             col -= 100
         }
-        pattern += "(?:[^\n]*\n){\(line-1)}(\(largecol).{\(col-1)}[^\n]*?)(\(text))([^\n]*)"
+        pattern += "(?:[^\n]*\n){\(line-1)}(\(largecol).{\(col-1)}[^\n]*?)(\\Q\(text)\\E)([^\n]*)"
         return ByteRegex( pattern: pattern )
     }
 
     /** text logged to refactoring console */
     func patchText( contents: NSData, value: String ) -> String? {
         if let matches = regex( value ).match( contents ) {
-            return
-                htmlClean( contents, match: matches[1] ) + "<b>" +
-                htmlClean( contents, match: matches[2] ) + "</b>" +
-                htmlClean( contents, match: matches[3] )
+            return htmlClean( contents, match: matches[1] ) +
+           "<b>" + htmlClean( contents, match: matches[2] ) + "</b>" +
+                   htmlClean( contents, match: matches[3] )
         }
         return "MATCH FAILED line:\(line) column:\(col)"
     }
@@ -73,7 +72,8 @@ var SK: SourceKit!
     private var backups = [String:NSData]()
     private var patched = [String:NSData]()
 
-    public func refactorFile( filePath: String, byteOffset: Int32, oldValue: String, logDir: String, plugin: RefactoratorResponse ) -> Int32 {
+    public func refactorFile( filePath: String, byteOffset: Int32, oldValue: String,
+                logDir: String, graph: String?, plugin: RefactoratorResponse ) -> Int32 {
         NSLog( "refactord -- refactorFile: \(filePath) \(byteOffset) \(logDir)")
 
         SK = SourceKit()
@@ -89,7 +89,7 @@ var SK: SourceKit!
         guard let argv = xcodeBuildLogs.compilerArgumentsMatching( { line in
                 line.containsString( " -primary-file \(filePath) " ) ||
                 line.containsString( " -primary-file \"\(filePath)\" " ) } ) else {
-            xcode.error( "Could not find compiler arguments in \(logDir). Have you built the project?" )
+            xcode.error( "Could not find compiler arguments in \(logDir). Have you built all files in the project?" )
             return -1
         }
 
@@ -122,8 +122,10 @@ var SK: SourceKit!
         usrToPatch = String.fromCString( usr )
         xcode.foundUSR( usrToPatch )
 
+        let visualiser: Visualiser? = graph != nil ? Visualiser() : nil
+
         /** index all sources included in selection's module */
-        processModuleSources( argv, args: compilerArgs, oldValue: oldValue )
+        processModuleSources( argv, args: compilerArgs, oldValue: oldValue, visualiser: visualiser )
 
         /** if entity is in a framework, index each source of that module as well */
         let module = sourcekitd_variant_dictionary_get_string( dict, SK.moduleID )
@@ -136,15 +138,17 @@ var SK: SourceKit!
 
             if let argv = xcodeBuildLogs.compilerArgumentsMatching( { line in
                 line.containsString( " -module-name \(module) " ) && line.containsString( " -primary-file " ) } ) {
-                    processModuleSources( argv, args: SK.array( argv ), oldValue: oldValue )
+                    processModuleSources( argv, args: SK.array( argv ), oldValue: oldValue, visualiser: nil )
             }
         }
+
+        visualiser?.render( graph! )
 
         xcode.indexing( nil )
         return Int32(patches.count)
     }
 
-    private func processModuleSources( argv: [String], args: sourcekitd_object_t, oldValue: String ) {
+    private func processModuleSources( argv: [String], args: sourcekitd_object_t, oldValue: String, visualiser: Visualiser? ) {
 
         for file in argv.filter( { $0.hasSuffix( ".swift" ) } ) {
 
@@ -177,59 +181,41 @@ var SK: SourceKit!
 
             if overrideUSR != nil  {
                 /** ideally override would give us its module */
-                traceDependencies( dict )
-            }
+                SK.recurseOver( SK.depedenciesID, resp: dict, block: { dict in
 
-            traceEntities( dict, oldValue: oldValue, file: file, contents: NSMutableData( contentsOfFile: file ) )
-        }
-    }
-
-    private func traceDependencies( resp: sourcekitd_variant_t ) {
-
-        let dependencies = sourcekitd_variant_dictionary_get_value( resp, SK.depedenciesID )
-
-        sourcekitd_variant_array_apply( dependencies ) { (_,dict) in
-
-            if sourcekitd_variant_dictionary_get_uid( dict, SK.kindID ) == SK.clangID &&
-                    !sourcekitd_variant_dictionary_get_bool( dict, SK.isSystemID ) {
-                let module = sourcekitd_variant_dictionary_get_string( dict, SK.nameID )
-                if module != nil {
-                    self.modules.insert( String.fromCString( module )! )
-                }
-            }
-
-            self.traceDependencies( dict )
-            return true
-        }
-    }
-
-    private func traceEntities( resp: sourcekitd_variant_t, oldValue: String, file: String, contents: NSMutableData? ) {
-
-        let entities = sourcekitd_variant_dictionary_get_value( resp, SK.entitiesID )
-
-        sourcekitd_variant_array_apply( entities ) { (_,dict) in
-
-            let usrString = sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
-            if usrString != nil {
-
-                let entityUSR = String.fromCString( usrString )
-
-                /** if entity == current selection's entity, log and store for patching later */
-                if entityUSR == self.usrToPatch || entityUSR == self.overrideUSR {
-
-                    let entity = Entity( file: file,
-                        line: Int32(sourcekitd_variant_dictionary_get_int64( dict, SK.lineID )),
-                        col: Int32(sourcekitd_variant_dictionary_get_int64( dict, SK.colID )) )
-
-                    if let contents = contents, patch = entity.patchText( contents, value: oldValue ) {
-                        xcode.willPatchFile( file, line:entity.line, col: entity.col, text: patch )
-                        self.patches.append( entity )
+                    if sourcekitd_variant_dictionary_get_uid( dict, SK.kindID ) == SK.clangID &&
+                            !sourcekitd_variant_dictionary_get_bool( dict, SK.isSystemID ) {
+                        let module = sourcekitd_variant_dictionary_get_string( dict, SK.nameID )
+                        if module != nil {
+                            self.modules.insert( String.fromCString( module )! )
+                        }
                     }
-               }
+                } )
             }
 
-            self.traceEntities( dict, oldValue: oldValue, file: file, contents: contents )
-            return true
+            if let contents = NSData( contentsOfFile: file ) {
+                SK.recurseOver( SK.entitiesID, resp: dict, visualiser: visualiser, block: { dict in
+
+                    let usrString = sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
+                    if usrString != nil {
+
+                        let entityUSR = String.fromCString( usrString )
+
+                        /** if entity == current selection's entity, log and store for patching later */
+                        if entityUSR == self.usrToPatch || entityUSR == self.overrideUSR {
+
+                            let entity = Entity( file: file,
+                                line: Int32(sourcekitd_variant_dictionary_get_int64( dict, SK.lineID )),
+                                col: Int32(sourcekitd_variant_dictionary_get_int64( dict, SK.colID )) )
+
+                            if let patch = entity.patchText( contents, value: oldValue ) {
+                                xcode.willPatchFile( file, line:entity.line, col: entity.col, text: patch )
+                                self.patches.append( entity )
+                            }
+                        }
+                    }
+                } )
+            }
         }
     }
 

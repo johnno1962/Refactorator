@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#26 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#29 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -70,6 +70,12 @@ static RefactoratorPlugin *refactoratorPlugin;
 
     NSMenu *editMenu = [[NSApp mainMenu] itemWithTitle:@"Edit"].submenu;
     NSMenu *refactorMenu = [editMenu itemWithTitle:@"Refactor"].submenu;
+
+    NSMenuItem *visualiseItem = [[NSMenuItem alloc] initWithTitle:@"Visualise !"
+                                                           action:@selector(startVisualise:) keyEquivalent:@""];
+    visualiseItem.target = refactoratorPlugin;
+    [refactorMenu insertItem:visualiseItem atIndex:0];
+
     refactorItem = [[NSMenuItem alloc] initWithTitle:@"Swift !"
                                               action:@selector(startRefactor:) keyEquivalent:@""];
     refactorItem.target = refactoratorPlugin;
@@ -108,6 +114,19 @@ static RefactoratorPlugin *refactoratorPlugin;
 
 // MARK: Refactoring
 
+- (IBAction)startVisualise:(id)sender {
+    if ( ![[NSFileManager defaultManager] fileExistsAtPath:@"/Applications/Graphviz.app"] ) {
+        if ( [[NSAlert alertWithMessageText:@"Refactorator Plugin:"
+                              defaultButton:@"OK" alternateButton:@"Download Graphviz" otherButton:nil
+                  informativeTextWithFormat:@"Graphviz application required for visualisations."]
+              runModal] == NSAlertAlternateReturn )
+            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://graphviz.org/Download_macos.php"]];
+        return;
+    }
+
+    [self startRefactor:self];
+}
+
 - (IBAction)startRefactor:(id)sender {
 
     if ( !webView &&
@@ -126,7 +145,7 @@ static RefactoratorPlugin *refactoratorPlugin;
     NSTextView *textView = self.textView;
     NSRange range = textView.selectedRange;
 
-    if ( [sender isKindOfClass:[NSMenuItem class]] )
+    if ( ![sender isKindOfClass:[NSButton class]] )
         oldValueField.stringValue = [textView.string substringWithRange:range];
 
     newValueField.stringValue = oldValueField.stringValue;
@@ -141,6 +160,7 @@ static RefactoratorPlugin *refactoratorPlugin;
 
     int offset = [[textView.string substringWithRange:NSMakeRange( 0, range.location )]
                   lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    NSString *graph = sender == self ? @"/tmp/refactorator.gv" : nil;
 
     dispatch_async( dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [self try:^{
@@ -148,13 +168,15 @@ static RefactoratorPlugin *refactoratorPlugin;
             daemonBusy = TRUE;
             int refs = [refactord refactorFile:self.currentFile byteOffset:offset
                                          oldValue:oldValueField.stringValue
-                                           logDir:[self logDirectory] plugin:self];
+                                        logDir:[self logDirectory] graph:graph plugin:self];
             dispatch_async( dispatch_get_main_queue(), ^{
                 NSString *html = @"<br><b>Indexing Complete. Symbol referenced in %d places. "
                     "<a href='http://injectionforxcode.johnholdsworth.com/refactorator.html'>usage</a><p>";
                 [webView.windowScriptObject callWebScriptMethod:@"append" withArguments:@[[NSString stringWithFormat:html, refs]]];
                 performButton.enabled = TRUE;
                 daemonBusy = FALSE;
+                if ( refs >= 0 && graph )
+                    [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:graph]];
             } );
         }];
     } );
