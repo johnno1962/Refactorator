@@ -22,10 +22,11 @@ the "Preview" button to view the changes that would be made.
 Press the "Save" button to save these changes to disk. Use the
 "Undo" button to revert the changes.
 
-If you have [Graphviz](http://www.graphviz.org/) installed you can view
-an approximate visualisation of the classes and their interrelationships in
-your project using the "Edit/Refactor/Visualise !" menu item. Initialiser
-calls are colored green, ivar references blue, and method calls red.
+As a by-product of the analysis performed for refactoring, if you have 
+[Graphviz](http://www.graphviz.org/) installed, you can view an approximate
+visualisation of the classes in your project and their interrelationships
+using the "Edit/Refactor/Visualise !" menu item. Initialiser calls are
+colored green, ivar references blue, and method calls red:
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/visualiser.png)
 
