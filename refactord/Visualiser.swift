@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 04/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Visualiser.swift#8 $
+//  $Id: //depot/Refactorator/refactord/Visualiser.swift#9 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -110,7 +110,8 @@ class Visualiser {
         for name in objectList {
             let shape = objectHash[name] == SK.enumID ? " shape=parallelogram" : objectHash[name] == SK.structID ? " shape=box" : ""
             fputs( "    \(oid) [label=\"\(name)\" tooltip=\"<\(name)> #\(oid)\"\(shape)\(filled) color=\"\(color)\"];\n", graph )
-            idHash[name] = oid++
+            idHash[name] = oid
+            oid += 1
         }
 
         for edge in edgeList {

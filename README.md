@@ -7,7 +7,7 @@ use Xcode's existing "Edit All in Scope" functionality. It uses
 distributed with Xcode to parse your project's Swift sources to find symbol
 references. 
 
-Where a symbol is defined in a framework Refactorator will parses
+Where a symbol is defined in a framework Refactorator will parse
 across targets to the framework if you start in the referring module.
 Similarly for overrides, start by selecting the overriding method.
 
@@ -20,7 +20,7 @@ to list places in the target that declare or refer to that symbol.
 Enter a new value for the identifier in the bottom textfield and press
 the "Preview" button to view the changes that would be made.
 Press the "Save" button to save these changes to disk. Use the
-"Undo" button to revert the changes.
+"Undo" button to revert the changes if need be.
 
 As a by-product of the analysis performed for refactoring, if you have 
 [Graphviz](http://www.graphviz.org/) installed, you can view an approximate
