@@ -28,11 +28,13 @@ class LogParser {
                     let spaceToTheLeftOfAnOddNumberOfQoutes = " (?=[^\"]*\"(([^\"]*\"){2})*[^\"]* -o )"
                     let line = line
                         .stringByTrimmingCharactersInSet( NSCharacterSet.whitespaceAndNewlineCharacterSet() )
+                        .stringByReplacingOccurrencesOfString( "\\\"", withString: "---" )
                         .stringByReplacingOccurrencesOfString( spaceToTheLeftOfAnOddNumberOfQoutes,
                             withString: "___", options: .RegularExpressionSearch, range: nil )
                         .stringByReplacingOccurrencesOfString( "\"", withString: "" )
                     return cleanup( line.componentsSeparatedByString( " " )
-                        .map { $0.stringByReplacingOccurrencesOfString( "___", withString: " " ) } )
+                        .map { $0.stringByReplacingOccurrencesOfString( "___", withString: " " )
+                                .stringByReplacingOccurrencesOfString( "---", withString: "\"" ) } )
                 }
             }
         }
