@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.h#16 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.h#17 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -27,7 +27,8 @@
 @protocol RefactoratorRequest
 
 - (int)refactorFile:(NSString * _Nonnull)filePath byteOffset:(int)offset oldValue:(NSString * _Nonnull)old
-             logDir:(NSString * _Nonnull)logDir graph:(NSString * _Nullable)graph plugin:(id<RefactoratorResponse> _Nonnull)plugin;
+             logDir:(NSString * _Nonnull)logDir graph:(NSString * _Nullable)graph
+            indexDB:(NSString * _Nonnull)indexDB plugin:(id<RefactoratorResponse> _Nonnull)plugin;
 - (int)refactorFrom:(NSString * _Nonnull)oldValue to:(NSString * _Nonnull)newValue;
 - (int)confirmRefactor;
 - (int)revertRefactor;

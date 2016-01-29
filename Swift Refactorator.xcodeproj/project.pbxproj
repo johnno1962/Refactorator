@@ -20,6 +20,10 @@
 		BB5509721C3066E100A2EC44 /* Refactorator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55096B1C3065D100A2EC44 /* Refactorator.swift */; };
 		BB82F0CD1913D15F0015AE7A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = BB82F0CC1913D15F0015AE7A /* README.md */; };
 		BBB247481C35E87300FB87C3 /* SourceKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB247461C35E86500FB87C3 /* SourceKit.swift */; };
+		BBB55D731C5B3BE900339451 /* NewRefactorator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB55D711C5B3BC200339451 /* NewRefactorator.swift */; };
+		BBB55D791C5B3D6A00339451 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BBB55D781C5B3D6A00339451 /* libsqlite3.tbd */; };
+		BBB55D7A1C5B3DC600339451 /* IndexDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB55D761C5B3C2E00339451 /* IndexDB.swift */; };
+		BBB55D7B1C5B3DC900339451 /* IndexStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB55D741C5B3C0B00339451 /* IndexStrings.swift */; };
 		BBB802231C37EF7A008A97D0 /* LineGenerators.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB802211C37EF56008A97D0 /* LineGenerators.swift */; };
 		BBBD4F591A4AF4FA009969E1 /* log.html in Resources */ = {isa = PBXBuildFile; fileRef = BBBD4F571A4AF4FA009969E1 /* log.html */; };
 		DA1B5D020E64686800921439 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 089C1672FE841209C02AAC07 /* Foundation.framework */; };
@@ -55,6 +59,10 @@
 		BB55096F1C3065E000A2EC44 /* RefactoratorPlugin.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RefactoratorPlugin.xib; sourceTree = "<group>"; };
 		BB82F0CC1913D15F0015AE7A /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		BBB247461C35E86500FB87C3 /* SourceKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SourceKit.swift; path = refactord/SourceKit.swift; sourceTree = "<group>"; };
+		BBB55D711C5B3BC200339451 /* NewRefactorator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NewRefactorator.swift; path = refactord/NewRefactorator.swift; sourceTree = "<group>"; };
+		BBB55D741C5B3C0B00339451 /* IndexStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IndexStrings.swift; path = refactord/IndexStrings.swift; sourceTree = "<group>"; };
+		BBB55D761C5B3C2E00339451 /* IndexDB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IndexDB.swift; path = refactord/IndexDB.swift; sourceTree = "<group>"; };
+		BBB55D781C5B3D6A00339451 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		BBB802211C37EF56008A97D0 /* LineGenerators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LineGenerators.swift; path = refactord/LineGenerators.swift; sourceTree = "<group>"; };
 		BBBD4F571A4AF4FA009969E1 /* log.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = log.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -75,6 +83,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB50F7CA1C25CB0200E6C923 /* sourcekitd.framework in Frameworks */,
+				BBB55D791C5B3D6A00339451 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,6 +146,9 @@
 			children = (
 				BB50F7A61C25C99A00E6C923 /* main.m */,
 				BB50F7A81C25C99A00E6C923 /* refactord-Bridging-Header.h */,
+				BBB55D711C5B3BC200339451 /* NewRefactorator.swift */,
+				BBB55D741C5B3C0B00339451 /* IndexStrings.swift */,
+				BBB55D761C5B3C2E00339451 /* IndexDB.swift */,
 				BB55096B1C3065D100A2EC44 /* Refactorator.swift */,
 				BB02BB291C3AA99A009B3BA0 /* Visualiser.swift */,
 				BB50F7A51C25C99A00E6C923 /* LogParser.swift */,
@@ -145,6 +157,7 @@
 				BBB247461C35E86500FB87C3 /* SourceKit.swift */,
 				BB50F7A91C25C99A00E6C923 /* sourcekitd.h */,
 				BB50F7C91C25CB0200E6C923 /* sourcekitd.framework */,
+				BBB55D781C5B3D6A00339451 /* libsqlite3.tbd */,
 			);
 			name = refactord;
 			sourceTree = "<group>";
@@ -195,7 +208,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0720;
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 0730;
 				TargetAttributes = {
 					BB50F7BB1C25CA3400E6C923 = {
 						CreatedOnToolsVersion = 7.2;
@@ -268,6 +281,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB50F7C51C25CAAC00E6C923 /* main.m in Sources */,
+				BBB55D731C5B3BE900339451 /* NewRefactorator.swift in Sources */,
+				BBB55D7B1C5B3DC900339451 /* IndexStrings.swift in Sources */,
+				BBB55D7A1C5B3DC600339451 /* IndexDB.swift in Sources */,
 				BB5509721C3066E100A2EC44 /* Refactorator.swift in Sources */,
 				BB02BB2B1C3AA9AE009B3BA0 /* Visualiser.swift in Sources */,
 				BB50F7C71C25CAAC00E6C923 /* LogParser.swift in Sources */,
@@ -302,7 +318,6 @@
 				DEPLOYMENT_POSTPROCESSING = YES;
 				DSTROOT = "$(HOME)";
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_GC = unsupported;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -336,7 +351,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_PREPROCESSOR_DEFINITIONS = "";
 				INSTALL_PATH = "$(HOME)/Library/Application Support/Developer/Shared/Xcode/Plug-ins";
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "-Weverything";
 				SDKROOT = macosx;
@@ -378,7 +393,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				LD_RUNPATH_SEARCH_PATHS = "$(TOOLCHAIN_DIR)/usr/lib";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "refactord/refactord-Bridging-Header.h";

@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/main.m#9 $
+//  $Id: //depot/Refactorator/refactord/main.m#10 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -15,7 +15,7 @@
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        Refactorator *service = [Refactorator new];
+        Refactorator *service = [NewRefactorator new];
         NSConnection *xcodeConnection = [NSConnection serviceConnectionWithName:REFACTORATOR_SERVICE rootObject:service];
         [[NSRunLoop mainRunLoop] run];
         xcodeConnection = nil;

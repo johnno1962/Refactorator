@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 04/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Visualiser.swift#9 $
+//  $Id: //depot/Refactorator/refactord/Visualiser.swift#10 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -52,12 +52,12 @@ class Visualiser {
                 print( indent+String.fromCString( name )! )
             }
             if entityUSR!.hasPrefix("s:") {
-                print( "\(indent)\(disectUSR(entityUSR!))" )
+                print( "\(indent)\(SK.disectUSR(entityUSR!))" )
             }
         }
 
         if usr != nil && name != nil, let name = String.fromCString( name ),
-                usr = String.fromCString( usr ), details = disectUSR( usr ) {
+                usr = String.fromCString( usr ), details = SK.disectUSR( usr ) {
             switch kind {
             case SK.structID, SK.classID://, SK.enumID:
                 makeNode( name, kind:kind )

@@ -4,4 +4,5 @@
 
 #import "../Classes/RefactoratorPlugin.h"
 #import "sourcekitd.h"
+#import <sqlite3.h>
 #import <regex.h>

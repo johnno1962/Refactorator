@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/SourceKit.swift#8 $
+//  $Id: //depot/Refactorator/refactord/SourceKit.swift#9 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -17,14 +17,14 @@ let isTTY = isatty( STDERR_FILENO ) != 0
 class SourceKit {
 
     /** request types */
-    lazy var requestID = sourcekitd_uid_get_from_cstr("key.request")
-    lazy var cursorRequestID = sourcekitd_uid_get_from_cstr("source.request.cursorinfo")
-    lazy var indexRequestID = sourcekitd_uid_get_from_cstr("source.request.indexsource")
+    private lazy var requestID = sourcekitd_uid_get_from_cstr("key.request")
+    private lazy var cursorRequestID = sourcekitd_uid_get_from_cstr("source.request.cursorinfo")
+    private lazy var indexRequestID = sourcekitd_uid_get_from_cstr("source.request.indexsource")
 
     /** request arguments */
-    lazy var offsetID = sourcekitd_uid_get_from_cstr("key.offset")
-    lazy var sourceFileID = sourcekitd_uid_get_from_cstr("key.sourcefile")
-    lazy var compilerArgsID = sourcekitd_uid_get_from_cstr("key.compilerargs")
+    private lazy var offsetID = sourcekitd_uid_get_from_cstr("key.offset")
+    private lazy var sourceFileID = sourcekitd_uid_get_from_cstr("key.sourcefile")
+    private lazy var compilerArgsID = sourcekitd_uid_get_from_cstr("key.compilerargs")
 
     /** sub entity lists */
     lazy var depedenciesID = sourcekitd_uid_get_from_cstr("key.dependencies")
@@ -62,7 +62,7 @@ class SourceKit {
 
     func array( argv: [String] ) -> sourcekitd_object_t {
         let objects = argv.map { sourcekitd_request_string_create( $0 ) }
-        return sourcekitd_request_array_create( objects, argv.count )
+        return sourcekitd_request_array_create( objects, objects.count )
     }
 
     func error( resp: sourcekitd_response_t ) -> String? {
@@ -87,7 +87,7 @@ class SourceKit {
         return resp
     }
 
-    func cursorInfo( filePath: String, byteOffset: Int64, compilerArgs: sourcekitd_object_t ) -> sourcekitd_response_t {
+    func cursorInfo( filePath: String, byteOffset: Int32, compilerArgs: sourcekitd_object_t ) -> sourcekitd_response_t {
         let req = sourcekitd_request_dictionary_create( nil, nil, 0 )
 
         sourcekitd_request_dictionary_set_uid( req, requestID, cursorRequestID )
@@ -128,45 +128,45 @@ class SourceKit {
         }
     }
 
-}
+    func disectUSR( usr: NSString ) -> [String]? {
+        guard usr.hasPrefix( "s:" ) else { return nil }
 
-func disectUSR( usr: NSString ) -> [String]? {
-    guard usr.hasPrefix( "s:" ) else { return nil }
+        let digits = NSCharacterSet.decimalDigitCharacterSet()
+        let scanner = NSScanner( string: usr as String )
+        var out = [String]()
+        var wasZero = false
 
-    let digits = NSCharacterSet.decimalDigitCharacterSet()
-    let scanner = NSScanner( string: usr as String )
-    var out = [String]()
-    var wasZero = false
+        while !scanner.atEnd {
 
-    while !scanner.atEnd {
+            var name: NSString?
+            scanner.scanUpToCharactersFromSet( digits, intoString: &name )
+            if name != nil, let name = name as? String {
+                if wasZero {
+                    out[out.count-1] += "0" + name
+                    wasZero = false
+                }
+                else {
+                    out.append( name )
+                }
+            }
 
-        var name: NSString?
-        scanner.scanUpToCharactersFromSet( digits, intoString: &name )
-        if name != nil, let name = name as? String {
+            var len = 0
+            scanner.scanInteger( &len )
+            wasZero = len == 0
             if wasZero {
-                out[out.count-1] += "0" + name
-                wasZero = false
+                continue
             }
-            else {
-                out.append( name )
+
+            if len > usr.length-scanner.scanLocation {
+                len = usr.length-scanner.scanLocation
             }
+
+            let range = NSMakeRange( scanner.scanLocation, len )
+            out.append( usr.substringWithRange( range ) )
+            scanner.scanLocation += len
         }
 
-        var len = 0
-        scanner.scanInteger( &len )
-        wasZero = len == 0
-        if wasZero {
-            continue
-        }
-
-        if len > usr.length-scanner.scanLocation {
-            len = usr.length-scanner.scanLocation
-        }
-
-        let range = NSMakeRange( scanner.scanLocation, len )
-        out.append( usr.substringWithRange( range ) )
-        scanner.scanLocation += len
+        return out
     }
 
-    return out
 }

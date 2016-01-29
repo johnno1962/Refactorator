@@ -1,15 +1,15 @@
 # Refactorator Xcode Plugin
 
-Refactorator is an Xcode plugin for refactoring Swift code. It will rename 
-public or internal vars, functions, enums etc. For private and local entities
-use Xcode's existing "Edit All in Scope" functionality. It uses 
-[SourceKit](http://www.jpsim.com/uncovering-sourcekit/), an XPC service
-distributed with Xcode to parse your project's Swift sources to find symbol
-references. 
+Refactorator is an Xcode plugin for refactoring Swift & now Objective-C code. It will
+rename  public or internal vars, functions, enums etc. For private and local entities
+use Xcode's existing "Edit All in Scope" functionality.
 
-Where a symbol is defined in a framework Refactorator will parse
-across targets to the framework if you start in the referring module.
-Similarly for overrides, start by selecting the overriding method.
+Stop Press: Refactorator no longer uses  
+[SourceKit](http://www.jpsim.com/uncovering-sourcekit/) directly, rather it
+accesses the SQLite database Xcode compiles using SourceKit. This makes it
+faster as it no longer needs to re-index the sources of your project and
+also means all targets of a project are included in refactoring including
+Objectve-C sources.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/refactorator.png)
 
@@ -26,15 +26,17 @@ As a by-product of the analysis performed for refactoring, if you have
 [Graphviz](http://www.graphviz.org/) installed, you can view an approximate
 visualisation of the classes in your project and their interrelationships
 using the "Edit/Refactor/Visualise !" menu item. Initialiser calls are
-colored green, ivar references blue, and method calls red:
+coloured green, ivar references blue, and method calls red:
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/visualiser.png)
 
 Refactorator was originally suggested as being feasible by @Daniel1of1 shortly after
 Swift came out building on the work by @jpsim on [SourceKitten](https://github.com/jpsim/SourceKitten).
 The last piece of the puzzle was the Open Sourcing of the SourceKit API by Apple as a part of Swift.
-Source files are parsed using the same XPC calls that Xcode uses when it indexes
+Source files are parsed using data from the same XPC calls that Xcode uses when it indexes
 a project and implemented in a daemon process so as not to affect the stability of Xcode.
+Invaluable in underdstanding the index database was [DB Browser for SQLite](http://sqlitebrowser.org/) 
+and the SQLie Swift code was helped along by reference to the excellsent [SQLite.swift](https://github.com/stephencelis/SQLite.swift).
 
 ### MIT License
 

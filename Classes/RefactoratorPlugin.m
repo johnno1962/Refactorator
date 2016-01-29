@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#29 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#30 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -109,7 +109,7 @@ static RefactoratorPlugin *refactoratorPlugin;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
-    return [self.currentFile hasSuffix:@".swift"];
+    return TRUE; //[self.currentFile hasSuffix:@".swift"];
 }
 
 // MARK: Refactoring
@@ -168,7 +168,8 @@ static RefactoratorPlugin *refactoratorPlugin;
             daemonBusy = TRUE;
             int refs = [refactord refactorFile:self.currentFile byteOffset:offset
                                          oldValue:oldValueField.stringValue
-                                        logDir:[self logDirectory] graph:graph plugin:self];
+                                        logDir:[self logDirectory] graph:graph
+                                       indexDB:[self indexDB] plugin:self];
             dispatch_async( dispatch_get_main_queue(), ^{
                 NSString *html = @"<br><b>Indexing Complete. Symbol referenced in %d places. "
                     "<a href='http://injectionforxcode.johnholdsworth.com/refactorator.html'>usage</a><p>";
@@ -350,6 +351,10 @@ static RefactoratorPlugin *refactoratorPlugin;
 
 - (NSString *)logDirectory {
     return [lastWindowController valueForKeyPath:@"workspace.executionEnvironment.logStore.rootDirectoryPath"];
+}
+
+- (NSString *)indexDB {
+    return [lastWindowController valueForKeyPath:@"workspace.index.databaseFile.pathString"];
 }
 
 @end

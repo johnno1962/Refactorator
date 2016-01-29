@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#46 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#48 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -52,22 +52,33 @@ struct Entity {
             .stringByReplacingOccurrencesOfString( "<", withString: "&lt;" ) ?? "CONVERSION FAILED"
     }
 
+    static func sort( inout entities: [Entity] ) {
+        entities.sortInPlace( { e1, e2 in
+            let file1 = NSURL( fileURLWithPath: e1.file ).lastPathComponent!,
+                file2 = NSURL( fileURLWithPath: e2.file ).lastPathComponent!
+            if file1 < file2 { return true }
+            if file1 > file2 { return false }
+            if e1.line < e2.line { return true }
+            if e1.line > e2.line { return false }
+            return e1.col < e2.col } )
+    }
+
 }
 
 var xcode: RefactoratorResponse!
 var SK: SourceKit!
 
 /** instance published as Distributed Objects service */
-@objc public class Refactorator: NSObject, RefactoratorRequest {
+@objc public class Refactorator: NSObject {
 
-    private var usrToPatch: String!
-    private var overrideUSR: String?
+    var usrToPatch: String!
+    var overrideUSR: String?
 
     /** indexes cached for the life of the daemon */
     private var indexes = [String:(__darwin_time_t,sourcekitd_response_t)]()
 
-    private var modules = Set<String>()
-    private var patches = [Entity]()
+    var modules = Set<String>()
+    var patches = [Entity]()
 
     private var backups = [String:NSData]()
     private var patched = [String:NSData]()
@@ -96,7 +107,7 @@ var SK: SourceKit!
         let compilerArgs = SK.array( argv )
 
         /** fund "USR" for current selection */
-        let resp = SK.cursorInfo( filePath, byteOffset: Int64(byteOffset), compilerArgs: compilerArgs )
+        let resp = SK.cursorInfo( filePath, byteOffset: byteOffset, compilerArgs: compilerArgs )
         if let error = SK.error( resp ) {
             xcode.error( "Cursor fetch error: \(error)" )
             exit(1)
@@ -122,16 +133,21 @@ var SK: SourceKit!
         usrToPatch = String.fromCString( usr )
         xcode.foundUSR( usrToPatch )
 
-        let visualiser: Visualiser? = graph != nil ? Visualiser() : nil
-
-        /** index all sources included in selection's module */
-        processModuleSources( argv, args: compilerArgs, oldValue: oldValue, visualiser: visualiser )
-
         /** if entity is in a framework, index each source of that module as well */
         let module = sourcekitd_variant_dictionary_get_string( dict, SK.moduleID )
         if module != nil {
             modules.insert( String.fromCString( module )! )
         }
+
+        return searchUSR( xcodeBuildLogs, argv: argv, compilerArgs: compilerArgs, oldValue: oldValue, graph: graph )
+    }
+
+    func searchUSR( xcodeBuildLogs: LogParser, argv: [String], compilerArgs: sourcekitd_object_t, oldValue: String, graph: String? ) -> Int32 {
+
+        let visualiser: Visualiser? = graph != nil ? Visualiser() : nil
+
+        /** index all sources included in selection's module */
+        processModuleSources( argv, args: compilerArgs, oldValue: oldValue, visualiser: visualiser )
 
         for module in modules {
             xcode.log( "<b>Framework '\(module)':</b><br>" )
@@ -170,6 +186,7 @@ var SK: SourceKit!
                 resp = SK.indexFile( file, compilerArgs: args )
                 if let error = SK.error( resp ) {
                     xcode.log( "Source index error for \(file): \(error)" )
+                    sleep( 2 )
                     SK = SourceKit()
                     continue
                 }

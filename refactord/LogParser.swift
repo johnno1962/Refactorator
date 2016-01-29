@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/LogParser.swift#16 $
+//  $Id: //depot/Refactorator/refactord/LogParser.swift#19 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -17,13 +17,13 @@ class LogParser {
     private let recentFirstLogs: [String]
 
     init( logDir: String ) {
-        recentFirstLogs = CommandGenerator( command: "ls -t \"\(logDir)\"/*.xcactivitylog" ).sequence.map { $0 }
+        recentFirstLogs = TaskGenerator( command: "ls -t \"\(logDir)\"/*.xcactivitylog" ).sequence.map { $0 }
     }
 
     func compilerArgumentsMatching( matcher: ( line: String ) -> Bool ) -> [String]? {
 
         for gzippedBuildLog in recentFirstLogs {
-            for line in CommandGenerator( command: "gunzip <\"\(gzippedBuildLog)\"", lineSeparator: "\r" ).sequence {
+            for line in TaskGenerator( command: "gunzip <\"\(gzippedBuildLog)\"", lineSeparator: "\r" ).sequence {
                 if matcher( line: line ) {
                     let spaceToTheLeftOfAnOddNumberOfQoutes = " (?=[^\"]*\"(([^\"]*\"){2})*[^\"]* -o )"
                     let line = line
@@ -45,12 +45,26 @@ class LogParser {
     private func cleanup( argv: [String] ) -> [String] {
         var out = [String]()
 
-        for i in 3..<argv.count {
-            if argv[i] == "-o" {
+        var i=1
+        while i<argv.count {
+            let arg = argv[i]
+            if arg == "-frontend" {
+                out.append( "-Xfrontend" )
+                out.append( "-j4" )
+            }
+            else if arg == "-primary-file" {
+            }
+            else if arg.hasPrefix( "-emit-" ) ||
+                    arg == "-serialize-diagnostics-path" {
+                i += 1
+            }
+            else if arg == "-o" {
                 break
             }
-
-            out.append( argv[i] )
+            else {
+                out.append( arg )
+            }
+            i += 1
         }
 
         return out
