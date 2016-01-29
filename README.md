@@ -34,7 +34,7 @@ The last piece of the puzzle was the Open Sourcing of the SourceKit API by Apple
 Source files are parsed using data from the same XPC calls that Xcode uses when it indexes
 a project and implemented in a daemon process so as not to affect the stability of Xcode.
 Invaluable in underdstanding the index database was [DB Browser for SQLite](http://sqlitebrowser.org/) 
-and the SQLie Swift code was helped along by reference to the excellsent [SQLite.swift](https://github.com/stephencelis/SQLite.swift).
+and the SQLite Swift code was helped along by reference to the excellent [SQLite.swift](https://github.com/stephencelis/SQLite.swift).
 
 ### MIT License
 
