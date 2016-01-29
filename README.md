@@ -4,12 +4,10 @@ Refactorator is an Xcode plugin for refactoring Swift & now Objective-C code. It
 rename  public or internal vars, functions, enums etc. For private and local entities
 use Xcode's existing "Edit All in Scope" functionality.
 
-Stop Press: Refactorator no longer uses  
-[SourceKit](http://www.jpsim.com/uncovering-sourcekit/) directly, rather it
-accesses the SQLite database Xcode compiles using SourceKit. This makes it
-faster as it no longer needs to re-index the sources of your project and
-also means all targets of a project are included in refactoring including
-Objectve-C sources.
+Stop Press: Refactorator no longer uses [SourceKit](http://www.jpsim.com/uncovering-sourcekit/) directly,
+rather it accesses the SQLite database Xcode compiles using SourceKit. This makes it both faster as it
+no longer needs to re-index the sources of your project but also means all targets of a project are
+included in refactoring including code written in Objectve-C.
 
 ![Icon](http://injectionforxcode.johnholdsworth.com/refactorator.png)
 
