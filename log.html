@@ -19,7 +19,7 @@ function append( html ) {
 }
 
 function showPatch( file, name, line, col, text ) {
-    append( "<span><a class=link href='"+file+"___"+line+"' title='line="+line+", col="+col+"'>"+
+    append( "<span title='"+name+", line="+line+", col="+col+"'><a class=link href='"+file+"___"+line+"'>"+
            name+"</a>:"+line+"</span>&nbsp;"+text.replace( /  /g, " &nbsp;" ) )
 }
 

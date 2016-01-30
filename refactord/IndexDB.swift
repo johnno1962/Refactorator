@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/IndexDB.swift#2 $
+//  $Id: //depot/Refactorator/refactord/IndexDB.swift#17 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -15,67 +15,80 @@ import Foundation
 
 class IndexDB {
 
-    var handle: COpaquePointer { return _handle }
-    private var _handle: COpaquePointer = nil
+    private var handle: COpaquePointer = nil
+
+    var error: String {
+        return String.fromCString( sqlite3_errmsg( handle ) ) ?? "DB ERROR"
+    }
 
     let filenames: IndexStrings
     let directories: IndexStrings
     let resolutions: IndexStrings
 
-    init( dbPath: String ) {
+    init?( dbPath: String ) {
         filenames = IndexStrings( path: dbPath+".strings-file" )
         directories = IndexStrings( path: dbPath+".strings-dir" )
         resolutions = IndexStrings( path: dbPath+".strings-res" )
-        guard sqlite3_open_v2( dbPath, &_handle, SQLITE_OPEN_READONLY, nil ) == SQLITE_OK else {
-            print( "BAD DB OPEN \(dbPath)" )
-            return
+        guard sqlite3_open_v2( dbPath, &handle, SQLITE_OPEN_READONLY, nil ) == SQLITE_OK else {
+            xcode.error( "Unable to open Index DB: \(dbPath) \(error)" )
+            return nil
         }
     }
 
     deinit {
-        sqlite3_close( handle )
+        if handle != nil {
+            sqlite3_close( handle )
+        }
     }
 
-    func usrInFile( fileName: String, filename: String, directory: String, line: Int, col: Int ) -> String? {
+    func prepare( sql: String, ids: [Int] ) -> COpaquePointer? {
+        var stmt: COpaquePointer = nil
+        guard sqlite3_prepare_v2( handle, sql, -1, &stmt, nil ) == SQLITE_OK else { return nil }
+
+        for p in 0..<ids.count {
+            guard sqlite3_bind_int64(stmt, Int32(p+1), Int64(ids[p])) == SQLITE_OK else { return nil }
+        }
+
+        return stmt
+    }
+
+    func usrInFile( filePath: String, line: Int, col: Int ) -> String? {
+
+        let url = NSURL( fileURLWithPath: filePath )
+        guard let directory = url.URLByDeletingLastPathComponent?.path, fileName = url.lastPathComponent else {
+            xcode.error( "Could not parse filePath: \(filePath)" )
+            return nil
+        }
+        let filename = fileName.lowercaseString
 
         var usr: String? = nil
 
-        if let fileID = filenames[fileName],  fileid = filenames[filename], dirID = directories[directory] {
+        if let fileid = filenames[filename], fileID = filenames[fileName],  dirID = directories[directory] {
 
-            var stmt: COpaquePointer = nil
-            guard sqlite3_prepare_v2( handle,
-                "select r.resolution from file f" +
-                    " inner join group_ g on (f.id = g.file)" +
-                    " inner join reference r on (g.id = r.group_)" +
+            let referenceSQL = "select r.resolution from file f" +
+                " inner join group_ g on (f.id = g.file)" +
+                " inner join reference r on (g.id = r.group_)" +
                 " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ?" +
-                " and r.lineNumber = ? and r.column = ?" +
-                "union " +
-                "select s.resolution from file f" +
-                    " inner join group_ g on (f.id = g.file)" +
-                    " inner join symbol s on (g.id = s.group_)" +
+                " and r.lineNumber = ? and r.column = ?"
+            let symbolSQL = "select s.resolution from file f" +
+                " inner join group_ g on (f.id = g.file)" +
+                " inner join symbol s on (g.id = s.group_)" +
                 " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ?" +
-                " and s.lineNumber = ? and s.column = ?",
-                -1, &stmt, nil ) == SQLITE_OK else { return String.fromCString( sqlite3_errmsg( handle ) )! }
+                " and s.lineNumber = ? and s.column = ?"
 
-            guard sqlite3_bind_int64(stmt, 1, Int64(fileid)) == SQLITE_OK else { return "!BIND1" }
-            guard sqlite3_bind_int64(stmt, 2, Int64(fileID)) == SQLITE_OK else { return "!BIND2" }
-            guard sqlite3_bind_int64(stmt, 3, Int64(dirID)) == SQLITE_OK else { return "!BIND3" }
-            guard sqlite3_bind_int64(stmt, 4, Int64(line)) == SQLITE_OK else { return "!BIND4" }
-            guard sqlite3_bind_int64(stmt, 5, Int64(col)) == SQLITE_OK else { return "!BIND5" }
-
-            guard sqlite3_bind_int64(stmt, 6, Int64(fileid)) == SQLITE_OK else { return "!BIND6" }
-            guard sqlite3_bind_int64(stmt, 7, Int64(fileID)) == SQLITE_OK else { return "!BIND7" }
-            guard sqlite3_bind_int64(stmt, 8, Int64(dirID)) == SQLITE_OK else { return "!BIND8" }
-            guard sqlite3_bind_int64(stmt, 9, Int64(line)) == SQLITE_OK else { return "!BIND9" }
-            guard sqlite3_bind_int64(stmt, 10, Int64(col)) == SQLITE_OK else { return "!BIND10" }
+            guard let stmt = prepare( referenceSQL + " union " + symbolSQL,
+                    ids: [fileid, fileID, dirID, line, col, fileid, fileID, dirID, line, col] ) else {
+                xcode.error( "USR prepare error: \(error)" )
+                return nil
+            }
 
             while sqlite3_step(stmt) == SQLITE_ROW {
-                let usrID = Int(sqlite3_column_int64(stmt,0))
+                let usrID = Int(sqlite3_column_int64(stmt, 0))
                 if let utmp = resolutions[usrID] where usr == nil ||
-                        utmp.characters.count < usr!.characters.count {
+                        utmp.utf16.count < usr!.utf16.count {
                     usr = resolutions[usrID]
                 }
-                print( "Found USR: \(usrID) -- \(usr)" )
+                print( "Refactorator: Found USR #\(usrID) -- \(usr)" )
             }
 
             sqlite3_finalize( stmt )
@@ -88,34 +101,35 @@ class IndexDB {
         var entities = [Entity]()
 
         if let resID = resolutions[usr] {
-            var stmt: COpaquePointer = nil
-            guard sqlite3_prepare_v2( handle,
-                "select f.filename, f.directory, r.lineNumber, r.column" +
+            let referenceSQL = "select f.filename, f.directory, r.lineNumber, r.column" +
                 " from reference r " +
                 " inner join group_ g on (g.id = r.group_)" +
                 " inner join file f on (f.id = g.file)" +
-                "where r.resolution = ? " +
-                "union " +
-                "select f.filename, f.directory, s.lineNumber, s.column" +
+                " where r.resolution = ?"
+            let symbolSQL = "select f.filename, f.directory, s.lineNumber, s.column" +
                 " from symbol s " +
                 " inner join group_ g on (g.id = s.group_)" +
                 " inner join file f on (f.id = g.file)" +
-                "where s.resolution = ? ",
-                -1, &stmt, nil ) == SQLITE_OK else { print( String.fromCString( sqlite3_errmsg( handle ) )! ); return entities }
+                " where s.resolution = ?"
 
-            guard sqlite3_bind_int64(stmt, 1, Int64(resID)) == SQLITE_OK else { return entities }
-            guard sqlite3_bind_int64(stmt, 2, Int64(resID)) == SQLITE_OK else { return entities }
+            guard let stmt = prepare( referenceSQL + " union " + symbolSQL, ids: [resID, resID] ) else {
+                xcode.error( "Entities prepare error \(error)" ); return entities
+            }
 
             while sqlite3_step(stmt) == SQLITE_ROW {
 
-                let fileID = Int(sqlite3_column_int64(stmt,0))
-                let dirID = Int(sqlite3_column_int64(stmt,1))
-                let line = Int32(sqlite3_column_int64(stmt,2))
-                let col = Int32(sqlite3_column_int64(stmt,3))
+                let fileID = Int(sqlite3_column_int64(stmt, 0))
+                let dirID = Int(sqlite3_column_int64(stmt, 1))
+                let line = Int32(sqlite3_column_int64(stmt, 2))
+                let col = Int32(sqlite3_column_int64(stmt, 3))
 
-                if line != 0, let file = filenames[fileID], dir = directories[dirID] {
-                    let file = dir+"/"+file, entity = Entity( file: file, line: line, col: col )
-                    entities.append( entity )
+                if line != 0 {
+                    if let file = filenames[fileID], dir = directories[dirID] {
+                        entities.append( Entity( file: dir+"/"+file, line: line, col: col ) )
+                    }
+                    else {
+                        xcode.log( "Could not look up fileID: \(fileID) or dirID: \(dirID)" )
+                    }
                 }
 
             }
@@ -125,7 +139,5 @@ class IndexDB {
 
         return entities
     }
-
-
 
 }

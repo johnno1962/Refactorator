@@ -22,6 +22,10 @@
 @import WebKit;
 @import ObjectiveC.runtime;
 
+@interface NSObject(Indexing)
+- (void)purgeFileCaches;
+@end
+
 static RefactoratorPlugin *refactoratorPlugin;
 
 @implementation RefactoratorPlugin {
@@ -109,7 +113,7 @@ static RefactoratorPlugin *refactoratorPlugin;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
-    return TRUE; //[self.currentFile hasSuffix:@".swift"];
+    return [self currentFile] != nil; //[self.currentFile hasSuffix:@".swift"];
 }
 
 // MARK: Refactoring
@@ -166,10 +170,12 @@ static RefactoratorPlugin *refactoratorPlugin;
         [self try:^{
             NSLog( @"Refactorating: %@ %d %@", refactord, offset, [self logDirectory] );
             daemonBusy = TRUE;
+            id index = [self index];
+            [index purgeFileCaches];
             int refs = [refactord refactorFile:self.currentFile byteOffset:offset
                                          oldValue:oldValueField.stringValue
                                         logDir:[self logDirectory] graph:graph
-                                       indexDB:[self indexDB] plugin:self];
+                                       indexDB:[index valueForKeyPath:@"databaseFile.pathString"] plugin:self];
             dispatch_async( dispatch_get_main_queue(), ^{
                 NSString *html = @"<br><b>Indexing Complete. Symbol referenced in %d places. "
                     "<a href='http://injectionforxcode.johnholdsworth.com/refactorator.html'>usage</a><p>";
@@ -353,8 +359,8 @@ static RefactoratorPlugin *refactoratorPlugin;
     return [lastWindowController valueForKeyPath:@"workspace.executionEnvironment.logStore.rootDirectoryPath"];
 }
 
-- (NSString *)indexDB {
-    return [lastWindowController valueForKeyPath:@"workspace.index.databaseFile.pathString"];
+- (NSString *)index {
+    return [lastWindowController valueForKeyPath:@"workspace.index"];
 }
 
 @end

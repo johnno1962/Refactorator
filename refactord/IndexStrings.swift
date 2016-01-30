@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/IndexStrings.swift#1 $
+//  $Id: //depot/Refactorator/refactord/IndexStrings.swift#3 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -22,11 +22,11 @@ class IndexStrings {
         if let data = NSData( contentsOfFile: path ) {
             let bytes = UnsafePointer<CChar>( data.bytes )
 
-            var pos = 0
+            var pos = 1
             while pos < data.length {
                 if let str = String.fromCString( bytes+pos ) {
                     if backward[str] != nil {
-                        print( "DUP \(str) \(backward[str]) \(pos)" )
+                        print( "Refactorator: Duplicate string \(str) \(backward[str]) \(pos) in \(path)" )
                     }
                     forward[pos] = str
                     backward[str] = pos
@@ -35,7 +35,7 @@ class IndexStrings {
             }
         }
         else {
-            print( "NOSTRINGS \(path)" )
+            xcode.log( "Could not load strings file: \(path)" )
         }
     }
 
