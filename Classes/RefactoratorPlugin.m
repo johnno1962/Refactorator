@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#30 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#31 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //

@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/IndexDB.swift#17 $
+//  $Id: //depot/Refactorator/refactord/IndexDB.swift#21 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -30,7 +30,7 @@ class IndexDB {
         directories = IndexStrings( path: dbPath+".strings-dir" )
         resolutions = IndexStrings( path: dbPath+".strings-res" )
         guard sqlite3_open_v2( dbPath, &handle, SQLITE_OPEN_READONLY, nil ) == SQLITE_OK else {
-            xcode.error( "Unable to open Index DB: \(dbPath) \(error)" )
+            xcode.error( "Unable to open Index DB at \(dbPath): \(error)" )
             return nil
         }
     }
@@ -41,15 +41,22 @@ class IndexDB {
         }
     }
 
-    func prepare( sql: String, ids: [Int] ) -> COpaquePointer? {
+    func select( sql: String, ids: [Int], row: (stmt: COpaquePointer) -> () ) -> Bool {
         var stmt: COpaquePointer = nil
-        guard sqlite3_prepare_v2( handle, sql, -1, &stmt, nil ) == SQLITE_OK else { return nil }
-
-        for p in 0..<ids.count {
-            guard sqlite3_bind_int64(stmt, Int32(p+1), Int64(ids[p])) == SQLITE_OK else { return nil }
+        guard sqlite3_prepare_v2( handle, sql, -1, &stmt, nil ) == SQLITE_OK else { return false }
+        defer {
+            sqlite3_finalize(stmt)
         }
 
-        return stmt
+        for p in 0..<ids.count {
+            guard sqlite3_bind_int64(stmt, Int32(p+1), Int64(ids[p])) == SQLITE_OK else { return false }
+        }
+
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            row( stmt: stmt )
+        }
+
+        return true
     }
 
     func usrInFile( filePath: String, line: Int, col: Int ) -> String? {
@@ -76,22 +83,19 @@ class IndexDB {
                 " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ?" +
                 " and s.lineNumber = ? and s.column = ?"
 
-            guard let stmt = prepare( referenceSQL + " union " + symbolSQL,
-                    ids: [fileid, fileID, dirID, line, col, fileid, fileID, dirID, line, col] ) else {
+            guard select( referenceSQL + " union " + symbolSQL,
+                    ids: [fileid, fileID, dirID, line, col, fileid, fileID, dirID, line, col], row: {
+                (stmt) in
+                let usrID = Int(sqlite3_column_int64(stmt, 0))
+                if let utmp = self.resolutions[usrID] where usr == nil ||
+                        utmp.utf16.count < usr!.utf16.count {
+                    usr = utmp
+                }
+                print( "Refactorator: Found USR #\(usrID) -- \(usr)" )
+            } ) else {
                 xcode.error( "USR prepare error: \(error)" )
                 return nil
             }
-
-            while sqlite3_step(stmt) == SQLITE_ROW {
-                let usrID = Int(sqlite3_column_int64(stmt, 0))
-                if let utmp = resolutions[usrID] where usr == nil ||
-                        utmp.utf16.count < usr!.utf16.count {
-                    usr = resolutions[usrID]
-                }
-                print( "Refactorator: Found USR #\(usrID) -- \(usr)" )
-            }
-
-            sqlite3_finalize( stmt )
         }
 
         return usr
@@ -101,6 +105,7 @@ class IndexDB {
         var entities = [Entity]()
 
         if let resID = resolutions[usr] {
+
             let referenceSQL = "select f.filename, f.directory, r.lineNumber, r.column" +
                 " from reference r " +
                 " inner join group_ g on (g.id = r.group_)" +
@@ -112,11 +117,8 @@ class IndexDB {
                 " inner join file f on (f.id = g.file)" +
                 " where s.resolution = ?"
 
-            guard let stmt = prepare( referenceSQL + " union " + symbolSQL, ids: [resID, resID] ) else {
-                xcode.error( "Entities prepare error \(error)" ); return entities
-            }
-
-            while sqlite3_step(stmt) == SQLITE_ROW {
+            guard select( referenceSQL + " union " + symbolSQL, ids: [resID, resID], row: {
+                (stmt) in
 
                 let fileID = Int(sqlite3_column_int64(stmt, 0))
                 let dirID = Int(sqlite3_column_int64(stmt, 1))
@@ -124,7 +126,7 @@ class IndexDB {
                 let col = Int32(sqlite3_column_int64(stmt, 3))
 
                 if line != 0 {
-                    if let file = filenames[fileID], dir = directories[dirID] {
+                    if let file = self.filenames[fileID], dir = self.directories[dirID] {
                         entities.append( Entity( file: dir+"/"+file, line: line, col: col ) )
                     }
                     else {
@@ -132,9 +134,9 @@ class IndexDB {
                     }
                 }
 
+            } ) else {
+                xcode.error( "Entities prepare error \(error)" ); return entities
             }
-
-            sqlite3_finalize( stmt )
         }
 
         return entities
