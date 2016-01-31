@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#31 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#33 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -21,10 +21,6 @@
 @import Cocoa;
 @import WebKit;
 @import ObjectiveC.runtime;
-
-@interface NSObject(Indexing)
-- (void)purgeFileCaches;
-@end
 
 static RefactoratorPlugin *refactoratorPlugin;
 
@@ -170,12 +166,10 @@ static RefactoratorPlugin *refactoratorPlugin;
         [self try:^{
             NSLog( @"Refactorating: %@ %d %@", refactord, offset, [self logDirectory] );
             daemonBusy = TRUE;
-            id index = [self index];
-            [index purgeFileCaches];
             int refs = [refactord refactorFile:self.currentFile byteOffset:offset
                                          oldValue:oldValueField.stringValue
                                         logDir:[self logDirectory] graph:graph
-                                       indexDB:[index valueForKeyPath:@"databaseFile.pathString"] plugin:self];
+                                       indexDB:[self indexDB] plugin:self];
             dispatch_async( dispatch_get_main_queue(), ^{
                 NSString *html = @"<br><b>Indexing Complete. Symbol referenced in %d places. "
                     "<a href='http://injectionforxcode.johnholdsworth.com/refactorator.html'>usage</a><p>";
@@ -204,7 +198,16 @@ static RefactoratorPlugin *refactoratorPlugin;
     refactord = (id<RefactoratorRequest>)[doConnection rootProxy];
     [(id)refactord setProtocolForProxy:@protocol(RefactoratorRequest)];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(connectionDidDie:)
+                                                 name:NSConnectionDidDieNotification
+                                               object:doConnection];
     [self housekeepDaemon];
+}
+
+- (void)connectionDidDie:(NSNotification *)notification {
+    [refactorTask terminate];
+    refactorTask = nil;
 }
 
 - (void)housekeepDaemon {
@@ -216,9 +219,10 @@ static RefactoratorPlugin *refactoratorPlugin;
         [self performSelector:@selector(housekeepDaemon) withObject:nil afterDelay:60. * 60.];
 }
 
-- (oneway void)foundUSR:(NSString *)usr {
+- (oneway void)foundUSR:(NSString *)usr text:(NSString *)text {
     dispatch_async( dispatch_get_main_queue(), ^{
-        usrField.stringValue = lastUSR = usr;
+        usrField.toolTip = usr;
+        usrField.stringValue = lastUSR = text;
         [panel makeKeyAndOrderFront:self];
     } );
 }
@@ -359,8 +363,8 @@ static RefactoratorPlugin *refactoratorPlugin;
     return [lastWindowController valueForKeyPath:@"workspace.executionEnvironment.logStore.rootDirectoryPath"];
 }
 
-- (NSString *)index {
-    return [lastWindowController valueForKeyPath:@"workspace.index"];
+- (NSString *)indexDB {
+    return [lastWindowController valueForKeyPath:@"workspace.index.databaseFile.pathString"];
 }
 
 @end

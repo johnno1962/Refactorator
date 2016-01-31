@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/NewRefactorator.swift#13 $
+//  $Id: //depot/Refactorator/refactord/NewRefactorator.swift#15 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -41,7 +41,7 @@ import Foundation
                 usrToPatch = indexdb.usrInFile( filePath, line: line, col: col )
 
                 if usrToPatch != nil {
-                    xcode.foundUSR( usrToPatch )
+                    xcode.foundUSR( usrToPatch, text: demangle( usrToPatch ) )
 
                     patches = indexdb.entitiesForUSR( usrToPatch, oldValue: oldValue )
 

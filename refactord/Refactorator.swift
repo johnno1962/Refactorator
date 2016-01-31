@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#48 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#52 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -18,6 +18,8 @@ struct Entity {
     let file: String
     let line: Int32
     let col: Int32
+    let kind: String?
+    let decl: Bool
 
     /** char based regex to find line, column and text in source */
     func regex( text: String ) -> ByteRegex {
@@ -39,8 +41,13 @@ struct Entity {
     /** text logged to refactoring console */
     func patchText( contents: NSData, value: String ) -> String? {
         if let matches = regex( value ).match( contents ) {
+            var b = "<b title='" + (kind ?? "UNKNOWN") + "'"
+            if decl {
+                b += " style='color: blue'"
+            }
+            b += ">"
             return htmlClean( contents, match: matches[1] ) +
-           "<b>" + htmlClean( contents, match: matches[2] ) + "</b>" +
+               b + htmlClean( contents, match: matches[2] ) + "</b>" +
                    htmlClean( contents, match: matches[3] )
         }
         return "MATCH FAILED line:\(line) column:\(col)"
@@ -131,7 +138,7 @@ var SK: SourceKit!
         }
 
         usrToPatch = String.fromCString( usr )
-        xcode.foundUSR( usrToPatch )
+        xcode.foundUSR( usrToPatch, text: demangle( usrToPatch ) )
 
         /** if entity is in a framework, index each source of that module as well */
         let module = sourcekitd_variant_dictionary_get_string( dict, SK.moduleID )
@@ -140,6 +147,10 @@ var SK: SourceKit!
         }
 
         return searchUSR( xcodeBuildLogs, argv: argv, compilerArgs: compilerArgs, oldValue: oldValue, graph: graph )
+    }
+
+    func demangle( usr: String ) -> String {
+        return usr.hasPrefix( "s:" ) ? _stdlib_demangleName( "_T"+usr.substringFromIndex( usr.startIndex.advancedBy( 2 ) ) ) : usr
     }
 
     func searchUSR( xcodeBuildLogs: LogParser, argv: [String], compilerArgs: sourcekitd_object_t, oldValue: String, graph: String? ) -> Int32 {
@@ -220,10 +231,13 @@ var SK: SourceKit!
 
                         /** if entity == current selection's entity, log and store for patching later */
                         if entityUSR == self.usrToPatch || entityUSR == self.overrideUSR {
+                            let kindID = sourcekitd_variant_dictionary_get_uid( dict, SK.kindID )
+                            let kind = String.fromCString( sourcekitd_uid_get_string_ptr( kindID ) )!
 
                             let entity = Entity( file: file,
                                 line: Int32(sourcekitd_variant_dictionary_get_int64( dict, SK.lineID )),
-                                col: Int32(sourcekitd_variant_dictionary_get_int64( dict, SK.colID )) )
+                                col: Int32(sourcekitd_variant_dictionary_get_int64( dict, SK.colID )),
+                                kind: kind, decl: kind.containsString( ".decl" ) )
 
                             if let patch = entity.patchText( contents, value: oldValue ) {
                                 xcode.willPatchFile( file, line:entity.line, col: entity.col, text: patch )
