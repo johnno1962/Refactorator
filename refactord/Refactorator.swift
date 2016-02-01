@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#54 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#55 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -104,6 +104,8 @@ var SK: SourceKit!
             return searchUSR( xcodeBuildLogs, argv: argv, compilerArgs: compilerArgs, oldValue: oldValue, graph: graph )
         }
 
+        xcode.error( "Unable to locate public or internal symbol associated with selection. " +
+                        "Has the project completed Indexing?" )
         return -1
     }
 
@@ -137,7 +139,6 @@ var SK: SourceKit!
         let dict = sourcekitd_response_get_value( resp )
         var usr = sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
         if usr == nil {
-            xcode.error( "Unable to locate public or internal symbol associated with selection." )
             return nil
         }
 
