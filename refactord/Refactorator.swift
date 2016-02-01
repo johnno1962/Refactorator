@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#52 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#54 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -90,12 +90,26 @@ var SK: SourceKit!
     private var backups = [String:NSData]()
     private var patched = [String:NSData]()
 
+    func demangle( usr: String ) -> String {
+        return usr.hasPrefix( "s:" ) ? _stdlib_demangleName( "_T"+usr.substringFromIndex( usr.startIndex.advancedBy( 2 ) ) ) : usr
+    }
+
     public func refactorFile( filePath: String, byteOffset: Int32, oldValue: String,
                 logDir: String, graph: String?, plugin: RefactoratorResponse ) -> Int32 {
         NSLog( "refactord -- refactorFile: \(filePath) \(byteOffset) \(logDir)")
 
-        SK = SourceKit()
         xcode = plugin
+
+        if let (xcodeBuildLogs, argv, compilerArgs) = parseForUSR( filePath, byteOffset: byteOffset, logDir: logDir ) {
+            return searchUSR( xcodeBuildLogs, argv: argv, compilerArgs: compilerArgs, oldValue: oldValue, graph: graph )
+        }
+
+        return -1
+    }
+
+    func parseForUSR( filePath: String, byteOffset: Int32, logDir: String ) -> (LogParser, [String], sourcekitd_object_t)? {
+
+        SK = SourceKit()
 
         modules.removeAll()
         patches.removeAll()
@@ -108,7 +122,7 @@ var SK: SourceKit!
                 line.containsString( " -primary-file \(filePath) " ) ||
                 line.containsString( " -primary-file \"\(filePath)\" " ) } ) else {
             xcode.error( "Could not find compiler arguments in \(logDir). Have you built all files in the project?" )
-            return -1
+            return nil
         }
 
         let compilerArgs = SK.array( argv )
@@ -124,7 +138,7 @@ var SK: SourceKit!
         var usr = sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
         if usr == nil {
             xcode.error( "Unable to locate public or internal symbol associated with selection." )
-            return -1
+            return nil
         }
 
         /** if function is override refactor function and overridden function */
@@ -146,11 +160,7 @@ var SK: SourceKit!
             modules.insert( String.fromCString( module )! )
         }
 
-        return searchUSR( xcodeBuildLogs, argv: argv, compilerArgs: compilerArgs, oldValue: oldValue, graph: graph )
-    }
-
-    func demangle( usr: String ) -> String {
-        return usr.hasPrefix( "s:" ) ? _stdlib_demangleName( "_T"+usr.substringFromIndex( usr.startIndex.advancedBy( 2 ) ) ) : usr
+        return (xcodeBuildLogs, argv, compilerArgs)
     }
 
     func searchUSR( xcodeBuildLogs: LogParser, argv: [String], compilerArgs: sourcekitd_object_t, oldValue: String, graph: String? ) -> Int32 {

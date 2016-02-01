@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#33 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#34 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -201,7 +201,7 @@ static RefactoratorPlugin *refactoratorPlugin;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(connectionDidDie:)
                                                  name:NSConnectionDidDieNotification
-                                               object:doConnection];
+                                               object:nil];
     [self housekeepDaemon];
 }
 
