@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#55 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#56 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -91,7 +91,8 @@ var SK: SourceKit!
     private var patched = [String:NSData]()
 
     func demangle( usr: String ) -> String {
-        return usr.hasPrefix( "s:" ) ? _stdlib_demangleName( "_T"+usr.substringFromIndex( usr.startIndex.advancedBy( 2 ) ) ) : usr
+        return usr.hasPrefix( "s:" ) ? _stdlib_demangleName( (usr.hasPrefix("_T") ? "" : "_T") +
+            usr.substringFromIndex( usr.startIndex.advancedBy( 2 ) ) ) : usr
     }
 
     public func refactorFile( filePath: String, byteOffset: Int32, oldValue: String,
@@ -104,8 +105,6 @@ var SK: SourceKit!
             return searchUSR( xcodeBuildLogs, argv: argv, compilerArgs: compilerArgs, oldValue: oldValue, graph: graph )
         }
 
-        xcode.error( "Unable to locate public or internal symbol associated with selection. " +
-                        "Has the project completed Indexing?" )
         return -1
     }
 
@@ -139,6 +138,8 @@ var SK: SourceKit!
         let dict = sourcekitd_response_get_value( resp )
         var usr = sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
         if usr == nil {
+            xcode.error( "Unable to locate public or internal symbol associated with selection. " +
+                "Has the project completed Indexing?" )
             return nil
         }
 

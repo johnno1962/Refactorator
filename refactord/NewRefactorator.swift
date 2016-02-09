@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/NewRefactorator.swift#19 $
+//  $Id: //depot/Refactorator/refactord/NewRefactorator.swift#20 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -40,8 +40,8 @@ import Foundation
 
                 usrToPatch = indexdb.usrInFile( filePath, line: line, col: col )
 
-                if usrToPatch == nil {
-                    parseForUSR( filePath, byteOffset: byteOffset, logDir: logDir )
+                if usrToPatch == nil && parseForUSR( filePath, byteOffset: byteOffset, logDir: logDir ) == nil {
+                    return -1
                 }
 
                 if usrToPatch != nil {
