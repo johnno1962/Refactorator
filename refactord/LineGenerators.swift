@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/LineGenerators.swift#4 $
+//  $Id: //depot/Refactorator/refactord/LineGenerators.swift#6 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -14,13 +14,25 @@ import Foundation
 
 class TaskGenerator: FileGenerator {
 
-    let task = NSTask()
+    let task: NSTask
 
-    init( command: String, lineSeparator: String? = nil ) {
+    convenience init( command: String, directory: String? = nil, lineSeparator: String? = nil ) {
+        self.init( launchPath: "/bin/bash", arguments: ["-c", "exec \(command)"], directory: directory, lineSeparator: lineSeparator )
+    }
 
-        task.launchPath = "/bin/bash"
-        task.arguments = ["-c", "exec \(command)"]
-        task.currentDirectoryPath = "/tmp"
+    convenience init( launchPath: String, arguments: [String] = [], directory: String? = nil, lineSeparator: String? = nil ) {
+
+        let task = NSTask()
+        task.launchPath = launchPath
+        task.arguments = arguments
+        task.currentDirectoryPath = directory ?? "."
+
+        self.init( task: task, lineSeparator: lineSeparator )
+    }
+
+    init( task: NSTask, lineSeparator: String? = nil ) {
+
+        self.task = task
 
         let pipe = NSPipe()
         task.standardOutput = pipe.fileHandleForWriting

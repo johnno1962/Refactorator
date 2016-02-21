@@ -5,14 +5,43 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/SourceKit.swift#9 $
+//  $Id: //depot/Refactorator/refactord/SourceKit.swift#14 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
 
 import Foundation
 
-let isTTY = isatty( STDERR_FILENO ) != 0
+var isTTY = isatty( STDERR_FILENO ) != 0
+
+protocol Visualiser {
+
+    func enter()
+    func present( dict: sourcekitd_variant_t, indent: String )
+    func exit()
+
+}
+
+extension sourcekitd_variant_t {
+
+    func getInt( key: sourcekitd_uid_t ) -> Int {
+        return Int(sourcekitd_variant_dictionary_get_int64( self, key ))
+    }
+
+    func getString( key: sourcekitd_uid_t ) -> String? {
+        let cstr = sourcekitd_variant_dictionary_get_string( self, key )
+        if cstr != nil {
+            return String.fromCString( cstr )
+        }
+        return nil
+    }
+
+    func getUUIDString( key: sourcekitd_uid_t ) -> String {
+        let uuid = sourcekitd_variant_dictionary_get_uid( self, key )
+        return String.fromCString( sourcekitd_uid_get_string_ptr( uuid ) ) ?? "NOUUID"
+    }
+
+}
 
 class SourceKit {
 
@@ -20,20 +49,29 @@ class SourceKit {
     private lazy var requestID = sourcekitd_uid_get_from_cstr("key.request")
     private lazy var cursorRequestID = sourcekitd_uid_get_from_cstr("source.request.cursorinfo")
     private lazy var indexRequestID = sourcekitd_uid_get_from_cstr("source.request.indexsource")
+    private lazy var editorOpenID = sourcekitd_uid_get_from_cstr("source.request.editor.open")
+
+    private lazy var enableMapID = sourcekitd_uid_get_from_cstr("key.enablesyntaxmap")
+    private lazy var enableSubID = sourcekitd_uid_get_from_cstr("key.enablesubstructure")
+    private lazy var syntaxOnlyID = sourcekitd_uid_get_from_cstr("key.syntactic_only")
 
     /** request arguments */
-    private lazy var offsetID = sourcekitd_uid_get_from_cstr("key.offset")
-    private lazy var sourceFileID = sourcekitd_uid_get_from_cstr("key.sourcefile")
-    private lazy var compilerArgsID = sourcekitd_uid_get_from_cstr("key.compilerargs")
+    lazy var offsetID = sourcekitd_uid_get_from_cstr("key.offset")
+    lazy var sourceFileID = sourcekitd_uid_get_from_cstr("key.sourcefile")
+    lazy var compilerArgsID = sourcekitd_uid_get_from_cstr("key.compilerargs")
 
     /** sub entity lists */
     lazy var depedenciesID = sourcekitd_uid_get_from_cstr("key.dependencies")
     lazy var overridesID = sourcekitd_uid_get_from_cstr("key.overrides")
     lazy var entitiesID = sourcekitd_uid_get_from_cstr("key.entities")
+    lazy var syntaxID = sourcekitd_uid_get_from_cstr("key.syntaxmap")
 
     /** entity attributes */
+    lazy var receiverID = sourcekitd_uid_get_from_cstr("key.receiver_usr")
+    lazy var isDynamicID = sourcekitd_uid_get_from_cstr("key.is_dynamic")
     lazy var isSystemID = sourcekitd_uid_get_from_cstr("key.is_system")
     lazy var moduleID = sourcekitd_uid_get_from_cstr("key.modulename")
+    lazy var lengthID = sourcekitd_uid_get_from_cstr("key.length")
     lazy var kindID = sourcekitd_uid_get_from_cstr("key.kind")
     lazy var nameID = sourcekitd_uid_get_from_cstr("key.name")
     lazy var lineID = sourcekitd_uid_get_from_cstr("key.line")
@@ -108,26 +146,80 @@ class SourceKit {
         return sendRequest( req )
     }
 
-    func recurseOver( childID: sourcekitd_uid_t, resp: sourcekitd_variant_t,
-            indent: String = "", visualiser: Visualiser? = nil,
-            block: ( dict: sourcekitd_variant_t ) -> ()) {
+    func syntaxMap( filePath: String, compilerArgs: sourcekitd_object_t ) -> sourcekitd_response_t {
+        let req = sourcekitd_request_dictionary_create( nil, nil, 0 )
 
-        let children = sourcekitd_variant_dictionary_get_value( resp, childID )
-        if sourcekitd_variant_get_type( children ) == SOURCEKITD_VARIANT_TYPE_ARRAY {
+        sourcekitd_request_dictionary_set_uid( req, requestID, editorOpenID )
+        sourcekitd_request_dictionary_set_string( req, nameID, filePath )
+        sourcekitd_request_dictionary_set_string( req, sourceFileID, filePath )
+        sourcekitd_request_dictionary_set_value( req, compilerArgsID, compilerArgs )
+        sourcekitd_request_dictionary_set_int64( req, enableMapID, 1 )
+        sourcekitd_request_dictionary_set_int64( req, enableSubID, 0 )
+        sourcekitd_request_dictionary_set_int64( req, syntaxOnlyID, 1 )
 
-            visualiser?.enter()
-            sourcekitd_variant_array_apply( children ) { (_,dict) in
-
-                block( dict: dict )
-                visualiser?.present( dict, indent: indent )
-
-                self.recurseOver( childID, resp: dict, indent: indent+"  ", visualiser: visualiser, block: block )
-                return true
-            }
-            visualiser?.exit()
-        }
+        return sendRequest( req )
     }
 
+    func recurseOver( childID: sourcekitd_uid_t, resp: sourcekitd_variant_t,
+        indent: String = "", visualiser: Visualiser? = nil,
+        block: ( dict: sourcekitd_variant_t ) -> ()) {
+
+            let children = sourcekitd_variant_dictionary_get_value( resp, childID )
+            if sourcekitd_variant_get_type( children ) == SOURCEKITD_VARIANT_TYPE_ARRAY {
+
+                visualiser?.enter()
+                sourcekitd_variant_array_apply( children ) { (_,dict) in
+
+                    block( dict: dict )
+                    visualiser?.present( dict, indent: indent )
+
+                    self.recurseOver( childID, resp: dict, indent: indent+"  ", visualiser: visualiser, block: block )
+                    return true
+                }
+                visualiser?.exit()
+            }
+    }
+
+    func compilerArgs( buildCommand: String ) -> [String] {
+        let spaceToTheLeftOfAnOddNumberOfQoutes = " (?=[^\"]*\"[^\"]*(?:(?:\"[^\"]*){2})* -o )"
+        let line = buildCommand
+            .stringByTrimmingCharactersInSet( NSCharacterSet.whitespaceAndNewlineCharacterSet() )
+            .stringByReplacingOccurrencesOfString( "\\\"", withString: "---" )
+            .stringByReplacingOccurrencesOfString( spaceToTheLeftOfAnOddNumberOfQoutes,
+                withString: "___", options: .RegularExpressionSearch, range: nil )
+            .stringByReplacingOccurrencesOfString( "\"", withString: "" )
+
+        let argv = line.componentsSeparatedByString( " " )
+            .map { $0.stringByReplacingOccurrencesOfString( "___", withString: " " )
+                .stringByReplacingOccurrencesOfString( "---", withString: "\"" ) }
+
+        var out = [String]()
+        var i=1
+
+        while i<argv.count {
+            let arg = argv[i]
+            if arg == "-frontend" {
+                out.append( "-Xfrontend" )
+                out.append( "-j4" )
+            }
+            else if arg == "-primary-file" {
+            }
+            else if arg.hasPrefix( "-emit-" ) ||
+                arg == "-serialize-diagnostics-path" {
+                    i += 1
+            }
+            else if arg == "-o" {
+                break
+            }
+            else {
+                out.append( arg )
+            }
+            i += 1
+        }
+
+        return out
+    }
+    
     func disectUSR( usr: NSString ) -> [String]? {
         guard usr.hasPrefix( "s:" ) else { return nil }
 

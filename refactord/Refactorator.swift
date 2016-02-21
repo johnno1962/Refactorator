@@ -5,72 +5,12 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#56 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#59 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
 
 import Foundation
-
-/** occurrence of a matching "Unified Symbol Resolution" */
-struct Entity {
-
-    let file: String
-    let line: Int32
-    let col: Int32
-    let kind: String?
-    let decl: Bool
-
-    /** char based regex to find line, column and text in source */
-    func regex( text: String ) -> ByteRegex {
-        var pattern = "^"
-        var line = self.line
-        while line > 100 {
-            pattern += "(?:[^\n]*\n){100}"
-            line -= 100
-        }
-        var col = self.col, largecol = ""
-        while col > 100 {
-            largecol += ".{100}"
-            col -= 100
-        }
-        pattern += "(?:[^\n]*\n){\(line-1)}(\(largecol).{\(col-1)}[^\n]*?)(\\Q\(text)\\E)([^\n]*)"
-        return ByteRegex( pattern: pattern )
-    }
-
-    /** text logged to refactoring console */
-    func patchText( contents: NSData, value: String ) -> String? {
-        if let matches = regex( value ).match( contents ) {
-            var b = "<b title='" + (kind ?? "UNKNOWN") + "'"
-            if decl {
-                b += " style='color: blue'"
-            }
-            b += ">"
-            return htmlClean( contents, match: matches[1] ) +
-               b + htmlClean( contents, match: matches[2] ) + "</b>" +
-                   htmlClean( contents, match: matches[3] )
-        }
-        return "MATCH FAILED line:\(line) column:\(col)"
-    }
-
-    func htmlClean( contents: NSData, match: regmatch_t ) -> String {
-        return String.fromData( contents.subdataWithRange( match.range ) )?
-            .stringByReplacingOccurrencesOfString( "&", withString: "&amp;" )
-            .stringByReplacingOccurrencesOfString( "<", withString: "&lt;" ) ?? "CONVERSION FAILED"
-    }
-
-    static func sort( inout entities: [Entity] ) {
-        entities.sortInPlace( { e1, e2 in
-            let file1 = NSURL( fileURLWithPath: e1.file ).lastPathComponent!,
-                file2 = NSURL( fileURLWithPath: e2.file ).lastPathComponent!
-            if file1 < file2 { return true }
-            if file1 > file2 { return false }
-            if e1.line < e2.line { return true }
-            if e1.line > e2.line { return false }
-            return e1.col < e2.col } )
-    }
-
-}
 
 var xcode: RefactoratorResponse!
 var SK: SourceKit!
@@ -136,8 +76,7 @@ var SK: SourceKit!
         }
 
         let dict = sourcekitd_response_get_value( resp )
-        var usr = sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
-        if usr == nil {
+        guard var usr = dict.getString( SK.usrID ) else {
             xcode.error( "Unable to locate public or internal symbol associated with selection. " +
                 "Has the project completed Indexing?" )
             return nil
@@ -147,19 +86,18 @@ var SK: SourceKit!
         let overrides = sourcekitd_variant_dictionary_get_value( dict, SK.overridesID )
         if sourcekitd_variant_get_type( overrides ) == SOURCEKITD_VARIANT_TYPE_ARRAY {
             sourcekitd_variant_array_apply( overrides ) { (_,dict) in
-                self.overrideUSR = String.fromCString( usr )
-                usr = sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
+                self.overrideUSR = usr
+                usr = dict.getString( SK.usrID )!
                 return false
             }
         }
 
-        usrToPatch = String.fromCString( usr )
+        usrToPatch = usr
         xcode.foundUSR( usrToPatch, text: demangle( usrToPatch ) )
 
         /** if entity is in a framework, index each source of that module as well */
-        let module = sourcekitd_variant_dictionary_get_string( dict, SK.moduleID )
-        if module != nil {
-            modules.insert( String.fromCString( module )! )
+        if let module = dict.getString( SK.moduleID ) {
+            modules.insert( module )
         }
 
         return (xcodeBuildLogs, argv, compilerArgs)
@@ -167,7 +105,7 @@ var SK: SourceKit!
 
     func searchUSR( xcodeBuildLogs: LogParser, argv: [String], compilerArgs: sourcekitd_object_t, oldValue: String, graph: String? ) -> Int32 {
 
-        let visualiser: Visualiser? = graph != nil ? Visualiser() : nil
+        let visualiser: Grapher? = graph != nil ? Grapher() : nil
 
         /** index all sources included in selection's module */
         processModuleSources( argv, args: compilerArgs, oldValue: oldValue, visualiser: visualiser )
@@ -225,8 +163,7 @@ var SK: SourceKit!
 
                     if sourcekitd_variant_dictionary_get_uid( dict, SK.kindID ) == SK.clangID &&
                             !sourcekitd_variant_dictionary_get_bool( dict, SK.isSystemID ) {
-                        let module = sourcekitd_variant_dictionary_get_string( dict, SK.nameID )
-                        if module != nil {
+                        if let module = dict.getString( SK.nameID ) {
                             self.modules.insert( String.fromCString( module )! )
                         }
                     }
@@ -236,23 +173,19 @@ var SK: SourceKit!
             if let contents = NSData( contentsOfFile: file ) {
                 SK.recurseOver( SK.entitiesID, resp: dict, visualiser: visualiser, block: { dict in
 
-                    let usrString = sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
-                    if usrString != nil {
-
-                        let entityUSR = String.fromCString( usrString )
+                    if let entityUSR = dict.getString( SK.usrID ) {
 
                         /** if entity == current selection's entity, log and store for patching later */
                         if entityUSR == self.usrToPatch || entityUSR == self.overrideUSR {
-                            let kindID = sourcekitd_variant_dictionary_get_uid( dict, SK.kindID )
-                            let kind = String.fromCString( sourcekitd_uid_get_string_ptr( kindID ) )!
+                            let kind = dict.getUUIDString( SK.kindID )
 
                             let entity = Entity( file: file,
-                                line: Int32(sourcekitd_variant_dictionary_get_int64( dict, SK.lineID )),
-                                col: Int32(sourcekitd_variant_dictionary_get_int64( dict, SK.colID )),
+                                line: dict.getInt( SK.lineID ),
+                                col: dict.getInt( SK.colID ),
                                 kind: kind, decl: kind.containsString( ".decl" ) )
 
                             if let patch = entity.patchText( contents, value: oldValue ) {
-                                xcode.willPatchFile( file, line:entity.line, col: entity.col, text: patch )
+                                xcode.willPatchFile( file, line:Int32(entity.line), col: Int32(entity.col), text: patch )
                                 self.patches.append( entity )
                             }
                         }
@@ -288,7 +221,8 @@ var SK: SourceKit!
 
                 /** log and update in-memory version of source file */
                 if let patch = entity.patchText( out, value: newValue ) {
-                    blocks.append( { xcode.willPatchFile( entity.file, line:entity.line, col: entity.col, text: patch ) } )
+                    blocks.append( { xcode.willPatchFile( entity.file,
+                        line: Int32(entity.line), col: Int32(entity.col), text: patch ) } )
                     patched[entity.file] = out
                 }
             }

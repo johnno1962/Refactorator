@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7F2EB89C145057F200E97A87 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F2EB899145057EA00E97A87 /* AppKit.framework */; };
-		BB02BB2B1C3AA9AE009B3BA0 /* Visualiser.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB02BB291C3AA99A009B3BA0 /* Visualiser.swift */; };
+		BB02BB2B1C3AA9AE009B3BA0 /* Grapher.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB02BB291C3AA99A009B3BA0 /* Grapher.swift */; };
 		BB1D769E1C28612500F75914 /* ByteRegex.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1D769C1C28610300F75914 /* ByteRegex.swift */; };
 		BB50F75B1C255ABE00E6C923 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB50F75A1C255ABE00E6C923 /* WebKit.framework */; };
 		BB50F7C41C25CA7E00E6C923 /* refactord in Resources */ = {isa = PBXBuildFile; fileRef = BB50F7BC1C25CA3400E6C923 /* refactord */; };
@@ -19,6 +19,7 @@
 		BB5509711C3065E000A2EC44 /* RefactoratorPlugin.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB55096F1C3065E000A2EC44 /* RefactoratorPlugin.xib */; };
 		BB5509721C3066E100A2EC44 /* Refactorator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55096B1C3065D100A2EC44 /* Refactorator.swift */; };
 		BB82F0CD1913D15F0015AE7A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = BB82F0CC1913D15F0015AE7A /* README.md */; };
+		BB90DDA31C77352100926196 /* Entity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB90DDA11C77349E00926196 /* Entity.swift */; };
 		BBB247481C35E87300FB87C3 /* SourceKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB247461C35E86500FB87C3 /* SourceKit.swift */; };
 		BBB55D731C5B3BE900339451 /* NewRefactorator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBB55D711C5B3BC200339451 /* NewRefactorator.swift */; };
 		BBB55D791C5B3D6A00339451 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BBB55D781C5B3D6A00339451 /* libsqlite3.tbd */; };
@@ -44,7 +45,7 @@
 		7F2EB899145057EA00E97A87 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		8D5B49B6048680CD000E48DA /* Refactorator.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Refactorator.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BB02BB291C3AA99A009B3BA0 /* Visualiser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Visualiser.swift; path = refactord/Visualiser.swift; sourceTree = "<group>"; };
+		BB02BB291C3AA99A009B3BA0 /* Grapher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Grapher.swift; path = refactord/Grapher.swift; sourceTree = "<group>"; };
 		BB1D769C1C28610300F75914 /* ByteRegex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ByteRegex.swift; path = refactord/ByteRegex.swift; sourceTree = "<group>"; };
 		BB50F75A1C255ABE00E6C923 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		BB50F7A51C25C99A00E6C923 /* LogParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LogParser.swift; path = refactord/LogParser.swift; sourceTree = "<group>"; };
@@ -58,6 +59,7 @@
 		BB55096E1C3065E000A2EC44 /* RefactoratorPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RefactoratorPlugin.m; sourceTree = "<group>"; };
 		BB55096F1C3065E000A2EC44 /* RefactoratorPlugin.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RefactoratorPlugin.xib; sourceTree = "<group>"; };
 		BB82F0CC1913D15F0015AE7A /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		BB90DDA11C77349E00926196 /* Entity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Entity.swift; path = refactord/Entity.swift; sourceTree = "<group>"; };
 		BBB247461C35E86500FB87C3 /* SourceKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SourceKit.swift; path = refactord/SourceKit.swift; sourceTree = "<group>"; };
 		BBB55D711C5B3BC200339451 /* NewRefactorator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NewRefactorator.swift; path = refactord/NewRefactorator.swift; sourceTree = "<group>"; };
 		BBB55D741C5B3C0B00339451 /* IndexStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IndexStrings.swift; path = refactord/IndexStrings.swift; sourceTree = "<group>"; };
@@ -149,8 +151,9 @@
 				BBB55D711C5B3BC200339451 /* NewRefactorator.swift */,
 				BBB55D741C5B3C0B00339451 /* IndexStrings.swift */,
 				BBB55D761C5B3C2E00339451 /* IndexDB.swift */,
+				BB90DDA11C77349E00926196 /* Entity.swift */,
 				BB55096B1C3065D100A2EC44 /* Refactorator.swift */,
-				BB02BB291C3AA99A009B3BA0 /* Visualiser.swift */,
+				BB02BB291C3AA99A009B3BA0 /* Grapher.swift */,
 				BB50F7A51C25C99A00E6C923 /* LogParser.swift */,
 				BBB802211C37EF56008A97D0 /* LineGenerators.swift */,
 				BB1D769C1C28610300F75914 /* ByteRegex.swift */,
@@ -284,8 +287,9 @@
 				BBB55D731C5B3BE900339451 /* NewRefactorator.swift in Sources */,
 				BBB55D7B1C5B3DC900339451 /* IndexStrings.swift in Sources */,
 				BBB55D7A1C5B3DC600339451 /* IndexDB.swift in Sources */,
+				BB90DDA31C77352100926196 /* Entity.swift in Sources */,
 				BB5509721C3066E100A2EC44 /* Refactorator.swift in Sources */,
-				BB02BB2B1C3AA9AE009B3BA0 /* Visualiser.swift in Sources */,
+				BB02BB2B1C3AA9AE009B3BA0 /* Grapher.swift in Sources */,
 				BB50F7C71C25CAAC00E6C923 /* LogParser.swift in Sources */,
 				BBB802231C37EF7A008A97D0 /* LineGenerators.swift in Sources */,
 				BB1D769E1C28612500F75914 /* ByteRegex.swift in Sources */,

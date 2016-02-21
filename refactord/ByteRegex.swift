@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 20/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/ByteRegex.swift#10 $
+//  $Id: //depot/Refactorator/refactord/ByteRegex.swift#11 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -30,7 +30,7 @@ class ByteRegex {
         if error != 0 {
             var errbuff = [Int8]( count: 1024, repeatedValue: 0 )
             regerror( error, &regex, &errbuff, errbuff.count )
-            xcode.error( "Error in regex '\(pattern)': \(String.fromCString( errbuff )!)" )
+            print( "ByteRegex: Error in regex '\(pattern)': \(String.fromCString( errbuff )!)" )
         }
         groups = 1 + pattern.characters.filter { $0 == "(" } .count
     }
@@ -41,7 +41,7 @@ class ByteRegex {
         if error != 0 && error != REG_NOMATCH {
             var errbuff = [Int8]( count: 1024, repeatedValue: 0 )
             regerror( error, &regex, &errbuff, errbuff.count )
-            xcode.error( "Error in match: \(String.fromCString( errbuff )!)" )
+            print( "ByteRegex: Error in match: \(String.fromCString( errbuff )!)" )
         }
         return error == 0 ? matches : nil
     }

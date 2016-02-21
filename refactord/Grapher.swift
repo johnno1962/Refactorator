@@ -1,11 +1,11 @@
 //
-//  Visualiser.swift
+//  Grapher.swift
 //  refactord
 //
 //  Created by John Holdsworth on 04/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Visualiser.swift#10 $
+//  $Id: //depot/Refactorator/refactord/Grapher.swift#1 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -19,7 +19,7 @@ struct Edge {
     let kind: sourcekitd_uid_t
 }
 
-class Visualiser {
+class Grapher: Visualiser {
 
     private var definingStack = [("global",SK.classID)]
     private var defining: (name: String, kind: sourcekitd_uid_t) {

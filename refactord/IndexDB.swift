@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/IndexDB.swift#24 $
+//  $Id: //depot/Refactorator/refactord/IndexDB.swift#25 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -132,8 +132,8 @@ class IndexDB {
 
                 let fileID = Int(sqlite3_column_int64(stmt, 0))
                 let dirID = Int(sqlite3_column_int64(stmt, 1))
-                let line = Int32(sqlite3_column_int64(stmt, 2))
-                let col = Int32(sqlite3_column_int64(stmt, 3))
+                let line = Int(sqlite3_column_int64(stmt, 2))
+                let col = Int(sqlite3_column_int64(stmt, 3))
                 let kind = Int(sqlite3_column_int64(stmt, 4))
                 let decl = sqlite3_column_int64(stmt, 5) != 0
 

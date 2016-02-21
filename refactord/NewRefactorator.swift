@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/NewRefactorator.swift#20 $
+//  $Id: //depot/Refactorator/refactord/NewRefactorator.swift#23 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -47,12 +47,11 @@ import Foundation
                 if usrToPatch != nil {
                     xcode.foundUSR( usrToPatch, text: demangle( usrToPatch ) )
 
-                    patches = indexdb.entitiesForUSR( usrToPatch, oldValue: oldValue )
+                    patches = indexdb.entitiesForUSR( usrToPatch, oldValue: oldValue ).sort(<)
 
-                    Entity.sort( &patches )
                     for entity in patches {
                         if let contents = NSData( contentsOfFile: entity.file ), patch = entity.patchText( contents, value: oldValue ) {
-                            xcode.willPatchFile( entity.file, line: entity.line, col: entity.col, text: patch )
+                            xcode.willPatchFile( entity.file, line: Int32(entity.line), col: Int32(entity.col), text: patch )
                         }
                     }
 
