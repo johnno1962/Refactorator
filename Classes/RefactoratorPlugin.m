@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#34 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#35 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -120,7 +120,7 @@ static RefactoratorPlugin *refactoratorPlugin;
                               defaultButton:@"OK" alternateButton:@"Download Graphviz" otherButton:nil
                   informativeTextWithFormat:@"Graphviz application required for visualisations."]
               runModal] == NSAlertAlternateReturn )
-            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://graphviz.org/Download_macos.php"]];
+            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.graphviz.org/Download_macos.php"]];
         return;
     }
 
