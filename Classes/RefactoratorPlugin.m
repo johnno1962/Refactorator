@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 01/05/2014.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#35 $
+//  $Id: //depot/Refactorator/Classes/RefactoratorPlugin.m#36 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -364,7 +364,13 @@ static RefactoratorPlugin *refactoratorPlugin;
 }
 
 - (NSString *)indexDB {
-    return [lastWindowController valueForKeyPath:@"workspace.index.databaseFile.pathString"];
+    @try {
+        return [lastWindowController valueForKeyPath:@"workspace.index.databaseFile.pathString"];
+    }
+    @catch ( NSException *e ) {
+        return [[lastWindowController valueForKeyPath:@"workspace.index.databaseFolder.pathString"]
+                stringByAppendingPathComponent:@"db.xcindexdb"];
+    }
 }
 
 @end
