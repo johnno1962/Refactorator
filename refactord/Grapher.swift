@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 04/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Grapher.swift#1 $
+//  $Id: //depot/Refactorator/refactord/Grapher.swift#2 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -36,7 +36,7 @@ class Grapher: Visualiser {
     }
 
     func exit() {
-        definingStack.removeAtIndex( definingStack.count-1 )
+        definingStack.remove( at: definingStack.count-1 )
     }
 
     func present( dict: sourcekitd_variant_t, indent: String ) {
@@ -45,28 +45,29 @@ class Grapher: Visualiser {
         let name = sourcekitd_variant_dictionary_get_string( dict, SK.nameID )
 
         if isTTY {
-            let entityUSR = String.fromCString( usr )
-            print( "\n\(indent)\(String.fromCString( sourcekitd_uid_get_string_ptr( kind ) )!) " )
-            print( "\(indent)\(entityUSR!)" )
+            let entityUSR = String( cString: usr! )
+            print( "\n\(indent)\(String( cString: sourcekitd_uid_get_string_ptr( kind! ) )) " )
+            print( "\(indent)\(entityUSR)" )
             if name != nil {
-                print( indent+String.fromCString( name )! )
+                print( indent+String( cString: name! ) )
             }
-            if entityUSR!.hasPrefix("s:") {
-                print( "\(indent)\(SK.disectUSR(entityUSR!))" )
+            if entityUSR.hasPrefix("s:") {
+                print( "\(indent)\(SK.disectUSR(usr: entityUSR as NSString))" )
             }
         }
 
-        if usr != nil && name != nil, let name = String.fromCString( name ),
-                usr = String.fromCString( usr ), details = SK.disectUSR( usr ) {
-            switch kind {
+        if usr != nil && name != nil, let details = SK.disectUSR( usr: String( cString: usr! ) as NSString ) {
+            let name = String( cString: name! )
+//            let usr = String( cString: usr! )
+            switch kind! {
             case SK.structID, SK.classID://, SK.enumID:
-                makeNode( name, kind:kind )
-                defining = (name,kind)
+                makeNode( name: name, kind:kind! )
+                defining = (name,kind!)
 
             case SK.classVarID, SK.classMethodID, SK.initID, SK.varID, SK.methodID://, SK.elementID:
                 if (kind != SK.initID || details[0] == "s:FC") && details[2] != defining.name {
-                    makeNode( details[2], kind: nil )
-                    makeEdge( name, from: defining.name, to: details[2], kind: kind )
+                    makeNode( name: details[2], kind: nil )
+                    makeEdge( title: name, from: defining.name, to: details[2], kind: kind! )
                 }
             default:
                 break
@@ -79,7 +80,7 @@ class Grapher: Visualiser {
     private var edgeHash = [String:Bool]()
     private var edgeList = [Edge]()
 
-    private func makeNode( name: String, kind: sourcekitd_uid_t ) {
+    private func makeNode( name: String, kind: sourcekitd_uid_t? ) {
         if kind != nil {
             objectHash[name] = kind
             objectList.append( name )
@@ -115,7 +116,7 @@ class Grapher: Visualiser {
         }
 
         for edge in edgeList {
-            if let fromID = idHash[edge.from], toID = idHash[edge.to] {
+            if let fromID = idHash[edge.from], let toID = idHash[edge.to] {
                 var color = "#000000"
                 switch edge.kind {
                 case SK.classVarID:
@@ -143,12 +144,12 @@ class Grapher: Visualiser {
 
 }
 
-extension NSFileHandle {
+extension FileHandle {
 
     func append( str: String ) {
         str.withCString { bytes in
-            writeData( NSData( bytesNoCopy: UnsafeMutablePointer<Void>(bytes),
-                length: Int(strlen(bytes)), freeWhenDone: false ) )
+            write( NSData( bytesNoCopy: UnsafeMutableRawPointer(mutating: bytes),
+                length: Int(strlen(bytes)), freeWhenDone: false ) as Data )
         }
     }
 

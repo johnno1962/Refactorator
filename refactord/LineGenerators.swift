@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/LineGenerators.swift#6 $
+//  $Id: //depot/Refactorator/refactord/LineGenerators.swift#7 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -14,7 +14,7 @@ import Foundation
 
 class TaskGenerator: FileGenerator {
 
-    let task: NSTask
+    let task: Process
 
     convenience init( command: String, directory: String? = nil, lineSeparator: String? = nil ) {
         self.init( launchPath: "/bin/bash", arguments: ["-c", "exec \(command)"], directory: directory, lineSeparator: lineSeparator )
@@ -22,7 +22,7 @@ class TaskGenerator: FileGenerator {
 
     convenience init( launchPath: String, arguments: [String] = [], directory: String? = nil, lineSeparator: String? = nil ) {
 
-        let task = NSTask()
+        let task = Process()
         task.launchPath = launchPath
         task.arguments = arguments
         task.currentDirectoryPath = directory ?? "."
@@ -30,11 +30,11 @@ class TaskGenerator: FileGenerator {
         self.init( task: task, lineSeparator: lineSeparator )
     }
 
-    init( task: NSTask, lineSeparator: String? = nil ) {
+    init( task: Process, lineSeparator: String? = nil ) {
 
         self.task = task
 
-        let pipe = NSPipe()
+        let pipe = Pipe()
         task.standardOutput = pipe.fileHandleForWriting
         task.launch()
 
@@ -48,41 +48,41 @@ class TaskGenerator: FileGenerator {
 
 }
 
-class FileGenerator: GeneratorType {
+class FileGenerator: IteratorProtocol {
 
     let eol: Int32
-    let handle: NSFileHandle
+    let handle: FileHandle
     let readBuffer = NSMutableData()
 
     convenience init?( path: String, lineSeparator: String? = nil ) {
-        guard let handle = NSFileHandle( forReadingAtPath: path ) else { return nil }
+        guard let handle = FileHandle( forReadingAtPath: path ) else { return nil }
         self.init( handle: handle, lineSeparator: lineSeparator )
     }
 
-    init( handle: NSFileHandle, lineSeparator: String? = nil ) {
+    init( handle: FileHandle, lineSeparator: String? = nil ) {
         self.eol = Int32((lineSeparator ?? "\n").utf16.first!)
         self.handle = handle
     }
 
     func next() -> String? {
         while true {
-            let endOfLine = UnsafeMutablePointer<Int8>( memchr( readBuffer.bytes, eol, readBuffer.length ) )
-            if endOfLine != nil {
+            if let endOfLine = memchr( readBuffer.bytes, eol, readBuffer.length ) {
+                let endOfLine = endOfLine.assumingMemoryBound(to: Int8.self)
                 endOfLine[0] = 0
 
-                let start = UnsafeMutablePointer<Int8>(readBuffer.bytes)
-                let line = String.fromCString( start )
+                let start = readBuffer.bytes.assumingMemoryBound(to: Int8.self)
+                let line = String( cString: start )
 
-                let consumed = NSMakeRange( 0, endOfLine + 1 - start )
-                readBuffer.replaceBytesInRange( consumed, withBytes:nil, length:0 )
+                let consumed = NSMakeRange( 0, UnsafePointer<Int8>(endOfLine) + 1 - start )
+                readBuffer.replaceBytes( in: consumed, withBytes:nil, length:0 )
 
                 return line
             }
 
             let bytesRead = handle.availableData
-            if bytesRead.length <= 0 {
+            if bytesRead.count <= 0 {
                 if readBuffer.length != 0 {
-                    let last = String.fromData( readBuffer )
+                    let last = String.fromData( data: readBuffer )
                     readBuffer.length = 0
                     return last
                 }
@@ -91,7 +91,7 @@ class FileGenerator: GeneratorType {
                 }
             }
 
-            readBuffer.appendData( bytesRead )
+            readBuffer.append( bytesRead )
         }
         return nil
     }
@@ -107,8 +107,8 @@ class FileGenerator: GeneratorType {
 
 extension String {
 
-    static func fromData( data: NSData, encoding: UInt = NSUTF8StringEncoding ) -> String? {
-        return NSString( data: data, encoding: encoding ) as? String
+    static func fromData( data: NSData, encoding: String.Encoding = .utf8 ) -> String? {
+        return NSString( data: data as Data, encoding: encoding.rawValue ) as? String
     }
 
 }

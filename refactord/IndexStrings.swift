@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/IndexStrings.swift#3 $
+//  $Id: //depot/Refactorator/refactord/IndexStrings.swift#6 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -13,24 +13,48 @@
 
 import Foundation
 
+func mtime( _ path: String ) -> TimeInterval {
+    if !path.contains("-") {
+        return 0
+    }
+    do {
+        let attrs = try FileManager.default.attributesOfItem(atPath: path)
+        return (attrs[.modificationDate] as! NSDate).timeIntervalSinceReferenceDate
+    }
+    catch {
+        return 0
+    }
+}
+
 class IndexStrings {
 
+    static var cache = [String:IndexStrings]()
+
+    static func load( path: String ) -> IndexStrings {
+        if cache[path] == nil || mtime( path ) > cache[path]!.loaded {
+            cache[path] = IndexStrings(path: path)
+        }
+        return cache[path]!
+    }
+
+    let loaded: TimeInterval
     var forward = [Int:String]()
     var backward = [String:Int]()
 
     init( path: String ) {
+        loaded = mtime( path )
         if let data = NSData( contentsOfFile: path ) {
-            let bytes = UnsafePointer<CChar>( data.bytes )
+            let bytes = data.bytes.assumingMemoryBound(to: CChar.self)
 
             var pos = 1
             while pos < data.length {
-                if let str = String.fromCString( bytes+pos ) {
+                let str = String( cString: bytes+pos )
                     if backward[str] != nil {
                         print( "Refactorator: Duplicate string \(str) \(backward[str]) \(pos) in \(path)" )
                     }
                     forward[pos] = str
                     backward[str] = pos
-                }
+//                }
                 pos += Int(strlen( bytes+pos ))+1
             }
         }

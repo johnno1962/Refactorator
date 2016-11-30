@@ -12,16 +12,39 @@
 
 import Foundation
 
+extension String {
+
+    var url: URL {
+        return URL(fileURLWithPath: self)
+    }
+
+}
+
 class Entity: Hashable {
 
-    let file: String, line: Int, col: Int, kind: String?, decl: Bool
+    let file: String, line: Int, col: Int, dirID: Int, kindID: Int, decl: Bool
+    var offset: Int?, usrID: Int?
+    var notMatch = false
 
-    init( file: String, line: Int, col: Int, kind: String? = nil, decl: Bool = false ) {
+    init( file: String, line: Int = -1, col: Int = -1, offset: Int? = nil, dirID: Int = -1, kindID: Int = -1, decl: Bool = false, usrID: Int? = nil ) {
         self.file = file
         self.line = line
         self.col = col
-        self.kind = kind
+        self.offset = offset
+        self.dirID = dirID
+        self.kindID = kindID
         self.decl = decl
+        self.usrID = usrID
+    }
+
+    var usr: String? {
+        return usrID != nil ? IndexDB.resolutions[usrID!] : nil
+    }
+    var kind: String {
+        return IndexDB.kinds[kindID] ?? "unknown"
+    }
+    var kindSuffix: String {
+        return IndexDB.kindSuffixies[kindID] ?? "unknown"
     }
 
     var hashValue: Int {
@@ -45,15 +68,15 @@ class Entity: Hashable {
     }
 
     func patchText( contents: NSData, value: String ) -> String? {
-        if let matches = regex( value ).match( contents ) {
-            var b = "<b title='" + (kind ?? "UNKNOWN") + "'"
+        if let matches = regex( text: value ).match( input: contents ) {
+            var b = "<b title='" + (IndexDB.kinds[kindID] ?? "UNKNOWN") + "'"
             if decl {
                 b += " style='color: blue'"
             }
             b += ">"
-            return htmlClean( contents, match: matches[1] ) +
-               b + htmlClean( contents, match: matches[2] ) + "</b>" +
-                   htmlClean( contents, match: matches[3] )
+            return htmlClean( contents: contents, match: matches[1] ) +
+               b + htmlClean( contents: contents, match: matches[2] ) + "</b>" +
+                   htmlClean( contents: contents, match: matches[3] )
         }
         return "MATCH FAILED line:\(line) column:\(col)"
     }
@@ -63,9 +86,9 @@ class Entity: Hashable {
         if range.length > contents.length - range.location {
             range.length = contents.length - range.location
         }
-        return String.fromData( contents.subdataWithRange( range ) )?
-            .stringByReplacingOccurrencesOfString( "&", withString: "&amp;" )
-            .stringByReplacingOccurrencesOfString( "<", withString: "&lt;" ) ?? "CONVERSION FAILED"
+        return String( data: contents.subdata( with: range ), encoding: String.Encoding.utf8 )?
+            .replacingOccurrences( of: "&", with: "&amp;" )
+            .replacingOccurrences( of: "<", with: "&lt;" ) ?? "CONVERSION FAILED"
     }
 
 }
@@ -75,10 +98,12 @@ func ==(lhs: Entity, rhs: Entity) -> Bool {
 }
 
 func <(e1: Entity, e2: Entity) -> Bool {
-    let file1 = NSURL( fileURLWithPath: e1.file ).lastPathComponent!,
-    file2 = NSURL( fileURLWithPath: e2.file ).lastPathComponent!
-    if file1 < file2 { return true }
-    if file1 > file2 { return false }
+//    let file1 = e1.file.url.lastPathComponent,
+//    file2 = e2.file.url.lastPathComponent
+//    if file1 < file2 { return true }
+//    if file1 > file2 { return false }
+    if e1.file < e2.file { return true }
+    if e1.file > e2.file { return false }
     if e1.line < e2.line { return true }
     if e1.line > e2.line { return false }
     return e1.col < e2.col
