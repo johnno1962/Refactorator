@@ -9,6 +9,8 @@ rather it accesses the SQLite database Xcode compiles using SourceKit. This make
 no longer needs to re-index the sources of your project but also means all targets of a project are
 included in refactoring including code written in Objectve-C.
 
+An improved version of Refactorator is now available as a standalone App avilable [here](https://github.com/johnno1962/RefactoratorApp)
+
 ![Icon](http://injectionforxcode.johnholdsworth.com/refactorator.png)
 
 To use, download the source for this project and build to install the plugin
