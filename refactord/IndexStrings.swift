@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/IndexStrings.swift#6 $
+//  $Id: //depot/Refactorator/refactord/IndexStrings.swift#8 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -14,15 +14,15 @@
 import Foundation
 
 func mtime( _ path: String ) -> TimeInterval {
-    if !path.contains("-") {
-        return 0
+    if path.contains(".DS_Store") {
+        return -2
     }
     do {
         let attrs = try FileManager.default.attributesOfItem(atPath: path)
         return (attrs[.modificationDate] as! NSDate).timeIntervalSinceReferenceDate
     }
     catch {
-        return 0
+        return -1
     }
 }
 

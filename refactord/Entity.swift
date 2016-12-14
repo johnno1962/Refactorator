@@ -23,10 +23,10 @@ extension String {
 class Entity: Hashable {
 
     let file: String, line: Int, col: Int, dirID: Int, kindID: Int, decl: Bool
-    var offset: Int?, usrID: Int?
+    var offset: Int?, usrID: Int?, role: Int?
     var notMatch = false
 
-    init( file: String, line: Int = -1, col: Int = -1, offset: Int? = nil, dirID: Int = -1, kindID: Int = -1, decl: Bool = false, usrID: Int? = nil ) {
+    init( file: String, line: Int = -1, col: Int = -1, offset: Int? = nil, dirID: Int = -1, kindID: Int = -1, decl: Bool = false, usrID: Int? = nil, role: Int? = nil ) {
         self.file = file
         self.line = line
         self.col = col
@@ -35,6 +35,7 @@ class Entity: Hashable {
         self.kindID = kindID
         self.decl = decl
         self.usrID = usrID
+        self.role = role
     }
 
     var usr: String? {

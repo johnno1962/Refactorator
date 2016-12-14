@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/IndexDB.swift#37 $
+//  $Id: //depot/Refactorator/refactord/IndexDB.swift#40 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -208,14 +208,15 @@ class IndexDB {
             " inner join group_ g on (g.id = r.group_)" +
             " inner join file f on (f.id = g.file)" +
             " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ?" +
-            " and r.lineNumber = ? and r.column = ? " +
+            " and r.lineNumber = ? and r.column = ?" +
             " union " +
             " select s.resolution " +
             " from symbol s " +
             " inner join group_ g on (g.id = s.group_)" +
             " inner join file f on (f.id = g.file)" +
             " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ?" +
-            " and s.lineNumber = ? and s.column = ?) x on (x.resolution = t.resolution and x.resolution != 0)"
+            "  and s.lineNumber = ? and s.column = ?) x " +
+            "   on (x.resolution = t.resolution and x.resolution != 0 and t.role = 2)"
 
         execute(sql: symbolSQL, with: [fileid, fileID, dirID, line, col, fileid, fileID, dirID, line, col] ) {
             _ = $0.map { entities.append( $0 ) }
@@ -289,7 +290,7 @@ class IndexDB {
             " from symbol t " +
             " inner join group_ g on (g.id = t.group_)" +
             " inner join file f on (f.id = g.file)" +
-            " where resolution in(\(out.keys.map { "\($0)" }.joined(separator:",")))"
+            " where resolution in(\(out.keys.map { String($0) }.joined(separator:",")))"
 
         var entitiesByFile = [[Entity]]()
         execute(sql: symbolSQL, with: [] ) {
@@ -301,17 +302,75 @@ class IndexDB {
         return entitiesByFile
     }
 
+    func dependencies() -> [(String,String, Int)] {
+        let dirIDS = projectDirIDs.keys.filter { self.podDirIDs[$0] == nil }.map { String($0) }.joined(separator: ",")
+
+        let SQL = "select f.directory, f.filename, f1.directory, f1.filename, count(s.resolution)" +
+            " from symbol s" +
+            " inner join group_ g on (g.id = s.group_)" +
+            " inner join file f on (f.id = g.file)" +
+            " inner join reference r on (s.resolution = r.resolution)" +
+            " inner join group_ g1 on (g1.id = r.group_)" +
+            " inner join file f1 on (f1.id = g1.file)" +
+            " where f.directory in(\(dirIDS)) and f1.directory in(\(dirIDS)) and s.role = 2" +
+            " and not (f.directory == f1.directory and f.filename == f1.filename)" +
+            " group by f.directory, f.filename, f1.directory, f1.filename"
+
+        var dependencies = [(String,String,Int)]()
+
+        guard select( sql:SQL, ids: [], row: {
+            (stmt) in
+            let dirID = Int(sqlite3_column_int64(stmt, 0))
+            let fileID = Int(sqlite3_column_int64(stmt, 1))
+            let dirID1 = Int(sqlite3_column_int64(stmt, 2))
+            let fileID1 = Int(sqlite3_column_int64(stmt, 3))
+            let count = Int(sqlite3_column_int64(stmt, 4))
+
+            dependencies.append( (directories[dirID]!+"/"+filenames[fileID]!,
+                                  directories[dirID1]!+"/"+filenames[fileID1]!,
+                                  count))
+        } ) else {
+            xcode.error( "Dependencies prepare error \(error)" ); return dependencies
+        }
+
+        return dependencies
+    }
+
+    func dependsOn( path: String ) -> [[Entity]] {
+        var entitiesByFile = [[Entity]]()
+        guard let (fileid, fileID, dirID) = lookup( filePath: path ) else { return entitiesByFile }
+
+        let symbolSQL = "select __ENTITYCOLS__, 0" +
+            " from reference t " +
+            " inner join group_ g on (g.id = t.group_)" +
+            " inner join file f on (f.id = g.file) " +
+            " inner join (select s.resolution, f.directory as directory1, f.filename as filename1 " +
+            " from symbol s " +
+            " inner join group_ g on (g.id = s.group_)" +
+            " inner join file f on (f.id = g.file)" +
+            " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ? and role = 2" +
+            " ) x on (x.resolution = t.resolution and x.resolution != 0)" +
+            " where not (f.directory == x.directory1 and f.filename == x.filename1)"
+
+        execute(sql: symbolSQL, with: [fileid, fileID, dirID] ) {
+            entitiesByFile.append( $0 )
+        }
+
+        return entitiesByFile
+    }
+    
     func projectEntities() -> [[Entity]] {
+        let projectDirs = projectDirIDs.keys.map { String($0) }.joined(separator: ",")
         let symbolSQL = "select __ENTITYCOLS__, 1" +
             " from symbol t " +
             " inner join group_ g on (g.id = t.group_)" +
             " inner join file f on (f.id = g.file)" +
-            " where directory in(\(projectDirIDs.keys.map { "\($0)" }.joined(separator: ",")))"
+            " where directory in(\(projectDirs))"
         let referenceSQL = "select __ENTITYCOLS__, 0" +
             " from reference t " +
             " inner join group_ g on (g.id = t.group_)" +
             " inner join file f on (f.id = g.file)" +
-            " where directory in(\(projectDirIDs.keys.map { "\($0)" }.joined(separator: ",")))"
+            " where directory in(\(projectDirs))"
 
         var entitiesByFile = [[Entity]]()
         execute(sql: "\(symbolSQL) union \(referenceSQL)", with: [] ) {
@@ -321,14 +380,13 @@ class IndexDB {
         return entitiesByFile
     }
 
-
     func execute( sql: String, with ids: [Int], callback: (_ entities: [Entity]) -> Void ) {
         var already = [Entity:Bool]()
         var entities = [Entity]()
         var currentPath: String?
 
         let sql = sql.replacingOccurrences(of: "__ENTITYCOLS__",
-                                           with: "directory, filename, lineNumber, column, kind, t.resolution")
+                                           with: "directory, filename, lineNumber, column, kind, t.resolution, t.role")
         guard select( sql: "\(sql) order by directory desc, filename, lineNumber, column", ids: ids, row: {
             (stmt) in
 
@@ -338,7 +396,8 @@ class IndexDB {
             let col = Int(sqlite3_column_int64(stmt, 3))
             let kindID = Int(sqlite3_column_int64(stmt, 4))
             let usrID = Int(sqlite3_column_int64(stmt, 5))
-            let decl = sqlite3_column_int64(stmt, 6) != 0
+            let role = Int(sqlite3_column_int64(stmt, 6))
+            let isSymbol = sqlite3_column_int64(stmt, 7) != 0
 
             if line != 0 {
                 if let file = self.filenames[fileID], let dir = self.directories[dirID] {
@@ -352,7 +411,8 @@ class IndexDB {
                     }
 
                     let entity = Entity( file: path, line: line, col: col, dirID: dirID,
-                                         kindID: kindID, decl: decl, usrID: usrID )
+                                         kindID: kindID, decl: isSymbol && role == 2,
+                                         usrID: usrID, role: role )
 
                     if already[entity] == nil {
                         entities.append( entity )
@@ -365,7 +425,7 @@ class IndexDB {
             }
 
         } ) else {
-            xcode.error( "Entities prepare error \(error)" ); return
+            xcode.error( "Entities prepare error \(error), SQL: \(sql)" ); return
         }
 
         if !entities.isEmpty {
