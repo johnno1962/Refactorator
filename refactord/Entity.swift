@@ -15,7 +15,7 @@ import Foundation
 extension String {
 
     var url: URL {
-        return URL(fileURLWithPath: self)
+        return hasPrefix( "http://" ) ? URL(string: self)! : URL(fileURLWithPath: self)
     }
 
 }
