@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#61 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#63 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -13,7 +13,6 @@
 import Foundation
 
 var xcode: RefactoratorResponse!
-var SK: SourceKit!
 
 /** instance published as Distributed Objects service */
 @objc public class Refactorator: NSObject {

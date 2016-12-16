@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/IndexDB.swift#40 $
+//  $Id: //depot/Refactorator/refactord/IndexDB.swift#45 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -26,7 +26,7 @@ class IndexDB {
 
     static var kinds = [Int:String]()
     static var kindSuffixies = [Int:String]()
-    
+
     let filenames: IndexStrings
     let directories: IndexStrings
 
@@ -37,7 +37,12 @@ class IndexDB {
         return IndexDB.projectDirs[file.url.deletingLastPathComponent().path] != nil
     }
 
+    let roleIsDecl = "role in (1,2)"
+    let relatedsDB: String
+    var relateds = [Int:Int]()
+
     init?( dbPath: String ) {
+        relatedsDB = dbPath+"-relateds.txt"
         filenames = IndexStrings.load( path: dbPath+".strings-file" )
         directories = IndexStrings.load( path: dbPath+".strings-dir" )
         IndexDB.resolutions = IndexStrings.load( path: dbPath+".strings-res" )
@@ -71,6 +76,17 @@ class IndexDB {
         } ) else {
             xcode.error( "Could not select kinds" )
             return nil
+        }
+
+        if let relatedData = try? String(contentsOfFile: relatedsDB) {
+            for pairLine in relatedData.components(separatedBy: "\n") {
+                let pair = pairLine.components(separatedBy: "\t")
+                if let from = IndexDB.resolutions[pair[0]],
+                    let to = IndexDB.resolutions[pair[1]] {
+                    relateds[from] = to
+                    relateds[to] = from
+                }
+            }
         }
     }
 
@@ -179,20 +195,42 @@ class IndexDB {
             " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ?" +
             " and s.lineNumber = ? and s.column = ? and s.resolution != 0"
 
+        var usrIDs = [Int:Bool]()
+        _ = select(sql: "\(referenceSQL) union \(symbolSQL)", ids: [fileid, fileID, dirID, line, col, fileid, fileID, dirID, line, col] ) {
+            (stmt) in
+            usrIDs[Int(sqlite3_column_int64(stmt, 0))] = true
+        }
+
+        var usrCount = usrIDs.count
+        while true {
+            for (from, to) in relateds {
+                if usrIDs[from] != nil {
+                    usrIDs[to] = true
+                }
+            }
+            if usrIDs.count == usrCount {
+                break
+            }
+            usrCount = usrIDs.count
+        }
+
+//        print(usrIDs)
+
+        let usrIn = usrIDs.keys.map { String($0) }.joined(separator: ",")
+        let dirIDs = projectDirIDs.keys.map { String($0) }.joined(separator: ",")
+
         let referenceSQL2 = "select __ENTITYCOLS__, 0" +
             " from reference t " +
             " inner join group_ g on (g.id = t.group_)" +
             " inner join file f on (f.id = g.file)" +
-            " inner join (\(referenceSQL) union \(symbolSQL)) x on (x.resolution = t.resolution)"
+            " where t.resolution in(\(usrIn)) and (f.directory in(\(dirIDs)) or t.\(roleIsDecl))"
         let symbolSQL2 = "select __ENTITYCOLS__, 1" +
             " from symbol t " +
             " inner join group_ g on (g.id = t.group_)" +
             " inner join file f on (f.id = g.file)" +
-            " inner join (\(referenceSQL) union \(symbolSQL)) x on (x.resolution = t.resolution)"
+            " where t.resolution in(\(usrIn)) and (f.directory in(\(dirIDs)) or t.\(roleIsDecl))"
 
-        execute(sql: "\(referenceSQL2) union \(symbolSQL2)",
-            with: [fileid, fileID, dirID, line, col, fileid, fileID, dirID, line, col,
-                   fileid, fileID, dirID, line, col, fileid, fileID, dirID, line, col], callback: callback)
+        execute(sql: "\(referenceSQL2) union \(symbolSQL2)", with: [], callback: callback)
     }
 
     func declarationFor( filePath: String, line: Int, col: Int ) -> Entity? {
@@ -216,7 +254,7 @@ class IndexDB {
             " inner join file f on (f.id = g.file)" +
             " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ?" +
             "  and s.lineNumber = ? and s.column = ?) x " +
-            "   on (x.resolution = t.resolution and x.resolution != 0 and t.role = 2)"
+            "   on (x.resolution = t.resolution and x.resolution != 0 and t.\(roleIsDecl))"
 
         execute(sql: symbolSQL, with: [fileid, fileID, dirID, line, col, fileid, fileID, dirID, line, col] ) {
             _ = $0.map { entities.append( $0 ) }
@@ -348,7 +386,7 @@ class IndexDB {
             " from symbol s " +
             " inner join group_ g on (g.id = s.group_)" +
             " inner join file f on (f.id = g.file)" +
-            " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ? and role = 2" +
+            " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ? and \(roleIsDecl)" +
             " ) x on (x.resolution = t.resolution and x.resolution != 0)" +
             " where not (f.directory == x.directory1 and f.filename == x.filename1)"
 
@@ -411,7 +449,7 @@ class IndexDB {
                     }
 
                     let entity = Entity( file: path, line: line, col: col, dirID: dirID,
-                                         kindID: kindID, decl: isSymbol && role == 2,
+                                         kindID: kindID, decl: isSymbol && (role == 1 || role == 2),
                                          usrID: usrID, role: role )
 
                     if already[entity] == nil {

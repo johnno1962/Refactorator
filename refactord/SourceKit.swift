@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/SourceKit.swift#15 $
+//  $Id: //depot/Refactorator/refactord/SourceKit.swift#18 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -13,6 +13,7 @@
 import Foundation
 
 var isTTY = isatty( STDERR_FILENO ) != 0
+var SK: SourceKit!
 
 protocol Visualiser {
 
@@ -65,6 +66,7 @@ class SourceKit {
     lazy var depedenciesID = sourcekitd_uid_get_from_cstr("key.dependencies")!
     lazy var overridesID = sourcekitd_uid_get_from_cstr("key.overrides")!
     lazy var entitiesID = sourcekitd_uid_get_from_cstr("key.entities")!
+    lazy var relatedID = sourcekitd_uid_get_from_cstr("key.related")!
     lazy var syntaxID = sourcekitd_uid_get_from_cstr("key.syntaxmap")!
 
     /** entity attributes */
@@ -97,6 +99,7 @@ class SourceKit {
 
     init() {
         sourcekitd_initialize()
+        SK = self
     }
 
     func array( argv: [String] ) -> sourcekitd_object_t {
@@ -201,50 +204,6 @@ class SourceKit {
                 }
                 visualiser?.exit()
             }
-    }
-
-    func compilerArgs( buildCommand: String, filelist: [String]? = nil ) -> [String] {
-        let spaceToTheLeftOfAnOddNumberOfQoutes = " (?=[^\"]*\"[^\"]*(?:(?:\"[^\"]*){2})* -o )"
-        let line = buildCommand
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences( of:"\\\"", with: "---" )
-            .replacingOccurrences( of: spaceToTheLeftOfAnOddNumberOfQoutes, with: "___",
-                                   options: .regularExpression, range: nil )
-            .replacingOccurrences( of:"\"", with: "" )
-
-        let argv = line.components(separatedBy:" " )
-                .map { $0.replacingOccurrences( of:"___", with: " " )
-                .replacingOccurrences( of:"---", with: "\"" ) }
-
-        var out = [String]()
-        var i=1
-
-        while i<argv.count {
-            let arg = argv[i]
-            if arg == "-frontend" {
-                out.append( "-Xfrontend" )
-                out.append( "-j4" )
-            }
-            else if arg == "-primary-file" {
-            }
-            else if arg.hasPrefix( "-emit-" ) ||
-                arg == "-serialize-diagnostics-path" {
-                    i += 1
-            }
-            else if arg == "-o" {
-                break
-            }
-            else if arg == "-filelist" && filelist != nil {
-                out += filelist!
-                i += 1
-            }
-            else {
-                out.append( arg )
-            }
-            i += 1
-        }
-
-        return out
     }
 
     func disectUSR( usr: NSString ) -> [String]? {
