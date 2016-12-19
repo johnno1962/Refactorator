@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/SourceKit.swift#18 $
+//  $Id: //depot/Refactorator/refactord/SourceKit.swift#22 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -13,7 +13,6 @@
 import Foundation
 
 var isTTY = isatty( STDERR_FILENO ) != 0
-var SK: SourceKit!
 
 protocol Visualiser {
 
@@ -85,6 +84,7 @@ class SourceKit {
     lazy var clangID = sourcekitd_uid_get_from_cstr("source.lang.swift.import.module.clang")!
 
     /** declarations */
+    lazy var protocolID = sourcekitd_uid_get_from_cstr("source.lang.swift.decl.protocol")!
     lazy var structID = sourcekitd_uid_get_from_cstr("source.lang.swift.decl.struct")!
     lazy var classID = sourcekitd_uid_get_from_cstr("source.lang.swift.decl.class")!
     lazy var enumID = sourcekitd_uid_get_from_cstr("source.lang.swift.decl.enum")!
@@ -99,7 +99,6 @@ class SourceKit {
 
     init() {
         sourcekitd_initialize()
-        SK = self
     }
 
     func array( argv: [String] ) -> sourcekitd_object_t {

@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 29/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/IndexDB.swift#45 $
+//  $Id: //depot/Refactorator/refactord/IndexDB.swift#67 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -39,10 +39,9 @@ class IndexDB {
 
     let roleIsDecl = "role in (1,2)"
     let relatedsDB: String
-    var relateds = [Int:Int]()
+    var relateds: [Int:[Int]]?
 
     init?( dbPath: String ) {
-        relatedsDB = dbPath+"-relateds.txt"
         filenames = IndexStrings.load( path: dbPath+".strings-file" )
         directories = IndexStrings.load( path: dbPath+".strings-dir" )
         IndexDB.resolutions = IndexStrings.load( path: dbPath+".strings-res" )
@@ -58,6 +57,24 @@ class IndexDB {
                 }
             }
         }
+
+        relatedsDB = dbPath+"-relateds.txt"
+        if let relatedData = try? String(contentsOfFile: relatedsDB) {
+            relateds = [Int:[Int]]()
+            for pairLine in relatedData.components(separatedBy: "\n") {
+                let pair = pairLine.components(separatedBy: "\t")
+                if let from = IndexDB.resolutions[pair[0]],
+                    let to = IndexDB.resolutions[pair[1]] {
+                    for (from, to) in [(from, to), (to, from)] {
+                        if relateds![from] == nil {
+                            relateds![from] = [Int]()
+                        }
+                        relateds![from]!.append( to )
+                    }
+                }
+            }
+        }
+
         guard sqlite3_open_v2( dbPath, &handle, SQLITE_OPEN_READONLY, nil ) == SQLITE_OK else {
             xcode.error( "Unable to open Index DB at \(dbPath): \(error)" )
             return nil
@@ -76,17 +93,6 @@ class IndexDB {
         } ) else {
             xcode.error( "Could not select kinds" )
             return nil
-        }
-
-        if let relatedData = try? String(contentsOfFile: relatedsDB) {
-            for pairLine in relatedData.components(separatedBy: "\n") {
-                let pair = pairLine.components(separatedBy: "\t")
-                if let from = IndexDB.resolutions[pair[0]],
-                    let to = IndexDB.resolutions[pair[1]] {
-                    relateds[from] = to
-                    relateds[to] = from
-                }
-            }
         }
     }
 
@@ -112,6 +118,18 @@ class IndexDB {
         }
 
         return true
+    }
+
+    func files(inDirectory dir: String) -> [String] {
+        guard let dirID = directories[dir] else { return [] }
+        var files = [String]()
+
+        _ = select(sql: "select distinct filename from file where directory = ?", ids: [dirID] ) {
+            (stmt) in
+            files.append( filenames[Int(sqlite3_column_int64(stmt, 0))] ?? "??" )
+        }
+
+        return files
     }
 
     func lookup( filePath: String ) -> (Int, Int, Int)? {
@@ -180,9 +198,9 @@ class IndexDB {
 
         return entities
     }
-    
-    func entitiesFor( filePath: String, line: Int, col: Int, callback: (_ entities: [Entity]) -> Void ) {
-        guard let (fileid, fileID, dirID) = lookup( filePath: filePath ) else { return }
+
+    func usrIDsFor( filePath: String, line: Int, col: Int ) -> [Int]? {
+        guard let (fileid, fileID, dirID) = lookup( filePath: filePath ) else { return [] }
 
         let referenceSQL = "select r.resolution from file f" +
             " inner join group_ g on (f.id = g.file)" +
@@ -195,28 +213,35 @@ class IndexDB {
             " where f.lowercaseFilename = ? and f.filename = ? and f.directory = ?" +
             " and s.lineNumber = ? and s.column = ? and s.resolution != 0"
 
-        var usrIDs = [Int:Bool]()
+        var usrIDs = Set<Int>()
         _ = select(sql: "\(referenceSQL) union \(symbolSQL)", ids: [fileid, fileID, dirID, line, col, fileid, fileID, dirID, line, col] ) {
             (stmt) in
-            usrIDs[Int(sqlite3_column_int64(stmt, 0))] = true
+            usrIDs.insert(Int(sqlite3_column_int64(stmt, 0)))
         }
 
-        var usrCount = usrIDs.count
-        while true {
-            for (from, to) in relateds {
-                if usrIDs[from] != nil {
-                    usrIDs[to] = true
+        var newIDs = usrIDs
+        while relateds != nil {
+            var nextIDs = Set<Int>()
+            for id in newIDs {
+                if let to = relateds![id] {
+                    nextIDs.formUnion(to)
                 }
             }
+            let usrCount = usrIDs.count
+            usrIDs.formUnion(nextIDs)
             if usrIDs.count == usrCount {
                 break
             }
-            usrCount = usrIDs.count
+            newIDs = nextIDs
         }
 
 //        print(usrIDs)
 
-        let usrIn = usrIDs.keys.map { String($0) }.joined(separator: ",")
+        return usrIDs.count != 0 ? usrIDs.map { $0 } : nil
+    }
+
+    func entitiesFor( usrIDs: [Int], callback: (_ entities: [Entity]) -> Void ) {
+        let usrIn = usrIDs.map { String($0) }.joined(separator: ",")
         let dirIDs = projectDirIDs.keys.map { String($0) }.joined(separator: ",")
 
         let referenceSQL2 = "select __ENTITYCOLS__, 0" +
@@ -275,13 +300,9 @@ class IndexDB {
             let regex = try NSRegularExpression(pattern: pattern, options: [.caseInsensitive])
             let ids = IndexDB.resolutions.backward.keys.filter {
                 (usr) -> Bool in
-                let demangled = usr.hasPrefix("s:") ? demangle( usr )! : usr, range = NSMakeRange(0, demangled.utf16.count)
-                return regex.rangeOfFirstMatch(in: demangled, options: [],
-                                               range: range).location != NSNotFound
-                }.map { "\(IndexDB.resolutions.backward[$0]!)" }
-
-            //            let batch = 100
-            //            for offset in stride(from: 0, to: ids.count, by: batch) {
+                let demangled = demangle( usr )!, range = NSMakeRange(0, demangled.utf16.count)
+                return regex.firstMatch(in: demangled, options: [], range: range) != nil
+                }.map { String( IndexDB.resolutions.backward[$0] ?? -1 ) }
 
             let inner = ids.joined(separator:",")
             let referenceSQL = "select __ENTITYCOLS__, 0" +
@@ -347,7 +368,7 @@ class IndexDB {
             " from symbol s" +
             " inner join group_ g on (g.id = s.group_)" +
             " inner join file f on (f.id = g.file)" +
-            " inner join reference r on (s.resolution = r.resolution)" +
+            " inner join reference r on (s.resolution = r.resolution and s.resolution != 0)" +
             " inner join group_ g1 on (g1.id = r.group_)" +
             " inner join file f1 on (f1.id = g1.file)" +
             " where f.directory in(\(dirIDS)) and f1.directory in(\(dirIDS)) and s.role = 2" +
@@ -400,14 +421,14 @@ class IndexDB {
     func projectEntities() -> [[Entity]] {
         let projectDirs = projectDirIDs.keys.map { String($0) }.joined(separator: ",")
         let symbolSQL = "select __ENTITYCOLS__, 1" +
-            " from symbol t " +
-            " inner join group_ g on (g.id = t.group_)" +
-            " inner join file f on (f.id = g.file)" +
+            " from file f " +
+            " inner join group_ g on (f.id = g.file)" +
+            " inner join symbol t on (g.id = t.group_)" +
             " where directory in(\(projectDirs))"
         let referenceSQL = "select __ENTITYCOLS__, 0" +
-            " from reference t " +
-            " inner join group_ g on (g.id = t.group_)" +
-            " inner join file f on (f.id = g.file)" +
+            " from file f " +
+            " inner join group_ g on (f.id = g.file)" +
+            " inner join reference t on (g.id = t.group_)" +
             " where directory in(\(projectDirs))"
 
         var entitiesByFile = [[Entity]]()
@@ -571,4 +592,3 @@ func _stdlib_demangleName(_ mangledName: String) -> String {
 func demangle( _ usr: String? ) -> String? {
     return usr?.hasPrefix("s:") == true ? _stdlib_demangleName("_T"+usr!.substring(from: usr!.index(usr!.startIndex, offsetBy: 2))) : usr
 }
-

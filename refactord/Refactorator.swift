@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#63 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#66 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -13,6 +13,7 @@
 import Foundation
 
 var xcode: RefactoratorResponse!
+var SK: SourceKit!
 
 /** instance published as Distributed Objects service */
 @objc public class Refactorator: NSObject {
@@ -215,7 +216,7 @@ var xcode: RefactoratorResponse!
                 /** apply patch, substituting newValue for entity reference */
                 let out = NSMutableData()
                 out.append( contents.subdata( with: NSMakeRange( 0, Int(matches[2].rm_so) ) ) )
-                out.appendString( str: newValue )
+                out.appendString( newValue )
                 out.append( contents.subdata( with: NSMakeRange( Int(matches[2].rm_eo),
                                                         contents.length-Int(matches[2].rm_eo) ) ) )
 
@@ -262,7 +263,7 @@ var xcode: RefactoratorResponse!
 extension NSMutableData {
 
     @discardableResult
-    func appendString( str: String ) -> NSMutableData {
+    func appendString( _ str: String ) -> NSMutableData {
         str.withCString { bytes in
             append( bytes, length: Int(strlen(bytes)) )
         }

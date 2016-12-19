@@ -47,6 +47,9 @@ class Entity: Hashable {
     var kindSuffix: String {
         return IndexDB.kindSuffixies[kindID] ?? "unknown"
     }
+    var sourceName: String {
+        return file.url.lastPathComponent
+    }
 
     var hashValue: Int {
         return line + col
@@ -70,7 +73,7 @@ class Entity: Hashable {
 
     func patchText( contents: NSData, value: String ) -> String? {
         if let matches = regex( text: value ).match( input: contents ) {
-            var b = "<b title='" + (IndexDB.kinds[kindID] ?? "UNKNOWN") + "'"
+            var b = "<b title='\(kind)'"
             if decl {
                 b += " style='color: blue'"
             }
