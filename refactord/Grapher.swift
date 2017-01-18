@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 04/01/2016.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Grapher.swift#2 $
+//  $Id: //depot/Refactorator/refactord/Grapher.swift#3 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -40,13 +40,13 @@ class Grapher: Visualiser {
     }
 
     func present( dict: sourcekitd_variant_t, indent: String ) {
-        let kind = sourcekitd_variant_dictionary_get_uid( dict, SK.kindID )
-        let usr = sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
-        let name = sourcekitd_variant_dictionary_get_string( dict, SK.nameID )
+        let kind = SKApi.sourcekitd_variant_dictionary_get_uid( dict, SK.kindID )
+        let usr = SKApi.sourcekitd_variant_dictionary_get_string( dict, SK.usrID )
+        let name = SKApi.sourcekitd_variant_dictionary_get_string( dict, SK.nameID )
 
         if isTTY {
             let entityUSR = String( cString: usr! )
-            print( "\n\(indent)\(String( cString: sourcekitd_uid_get_string_ptr( kind! ) )) " )
+            print( "\n\(indent)\(String( cString: SKApi.sourcekitd_uid_get_string_ptr( kind! ) )) " )
             print( "\(indent)\(entityUSR)" )
             if name != nil {
                 print( indent+String( cString: name! ) )

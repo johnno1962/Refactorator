@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/Refactorator.swift#66 $
+//  $Id: //depot/Refactorator/refactord/Refactorator.swift#67 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -75,7 +75,7 @@ var SK: SourceKit!
             exit(1)
         }
 
-        let dict = sourcekitd_response_get_value( resp )
+        let dict = SKApi.sourcekitd_response_get_value( resp )
         guard var usr = dict.getString( key: SK.usrID ) else {
             xcode.error( "Unable to locate public or internal symbol associated with selection. " +
                 "Has the project completed Indexing?" )
@@ -83,9 +83,9 @@ var SK: SourceKit!
         }
 
         /** if function is override refactor function and overridden function */
-        let overrides = sourcekitd_variant_dictionary_get_value( dict, SK.overridesID )
-        if sourcekitd_variant_get_type( overrides ) == SOURCEKITD_VARIANT_TYPE_ARRAY {
-            sourcekitd_variant_array_apply( overrides ) { (_,dict) in
+        let overrides = SKApi.sourcekitd_variant_dictionary_get_value( dict, SK.overridesID )
+        if SKApi.sourcekitd_variant_get_type( overrides ) == SOURCEKITD_VARIANT_TYPE_ARRAY {
+            _ = SKApi.sourcekitd_variant_array_apply( overrides ) { (_,dict) in
                 self.overrideUSR = usr
                 usr = dict.getString( key: SK.usrID )!
                 return false
@@ -155,14 +155,14 @@ var SK: SourceKit!
                 indexes[file] = (lastModified, resp)
             }
 
-            let dict = sourcekitd_response_get_value( resp )
+            let dict = SKApi.sourcekitd_response_get_value( resp )
 
             if overrideUSR != nil  {
                 /** ideally override would give us its module */
                 SK.recurseOver( childID: SK.depedenciesID, resp: dict, block: { dict in
 
-                    if sourcekitd_variant_dictionary_get_uid( dict, SK.kindID ) == SK.clangID &&
-                            !sourcekitd_variant_dictionary_get_bool( dict, SK.isSystemID ) {
+                    if SKApi.sourcekitd_variant_dictionary_get_uid( dict, SK.kindID ) == SK.clangID &&
+                            !SKApi.sourcekitd_variant_dictionary_get_bool( dict, SK.isSystemID ) {
                         if let module = dict.getString( key: SK.nameID ) {
                             self.modules.insert( module )
                         }

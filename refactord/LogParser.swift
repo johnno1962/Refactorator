@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 19/12/2015.
 //  Copyright © 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/Refactorator/refactord/LogParser.swift#22 $
+//  $Id: //depot/Refactorator/refactord/LogParser.swift#23 $
 //
 //  Repo: https://github.com/johnno1962/Refactorator
 //
@@ -14,7 +14,7 @@ import Foundation
 
 class LogParser {
 
-    private let recentFirstLogs: [String]
+    let recentFirstLogs: [String]
 
     init( logDir: String ) {
         recentFirstLogs = TaskGenerator( command: "ls -t \"\(logDir)\"/*.xcactivitylog" ).sequence.map { $0 }
