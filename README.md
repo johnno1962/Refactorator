@@ -1,5 +1,7 @@
 # Refactorator Xcode Plugin
 
+Due to changes in the index database with Xcode 10 this plugin no longer works.
+
 Refactorator is an Xcode plugin for refactoring Swift & now Objective-C code. It will
 rename public or internal vars, functions, enums etc. For private and local entities
 use Xcode's existing "Edit All in Scope" functionality.
